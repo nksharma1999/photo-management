@@ -1,0 +1,56 @@
+.people-section {
+  background: #0f1a33;
+  padding: 20px;
+  border-radius: 12px;
+}
+
+.people-section h3 {
+  margin-bottom: 20px;
+}
+
+.people-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 20px;
+}
+
+.person-card {
+  background: #0f1a33;
+  padding: 15px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: 0.2s;
+}
+
+.person-card:hover {
+  transform: translateY(-4px);
+  background: #132046;
+}
+
+.person-card img {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+}
+
+.person-info p {
+  margin: 0;
+  font-size: 14px;
+}
+
+.person-info span {
+  font-size: 12px;
+  color: #9aa7c7;
+}
+
+.people-section,
+.map-section {
+  transition: 0.2s;
+}
+
+.people-section:hover,
+.map-section:hover {
+  transform: translateY(-3px);
+}

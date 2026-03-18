@@ -1,0 +1,16 @@
+.map-section {
+  background: #0f1a33;
+  padding: 20px;
+  border-radius: 12px;
+}
+
+.map-section h3 {
+  margin-bottom: 20px;
+}
+
+.map-container {
+  height: 350px;
+  width: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+}

@@ -1,0 +1,53 @@
+.photo-cloud {
+  margin-top: 30px;
+  background: #0f1a33;
+  padding: 0px 20px;
+  border-radius: 12px;
+}
+.photo-cloud-header{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+}
+.photo-cloud h3 {
+  margin-bottom: 15px;
+}
+
+.photo-cloud canvas {
+  height: 400px !important;
+  border-radius: 10px;
+}
+.cluster-controls{
+    /* background-color: red; */
+  display:flex;
+  gap:10px;
+  margin-bottom:10px;
+}
+.cluster-controls button{
+  padding:8px 14px;
+  border-radius:8px;
+  border:none;
+  background:#1c2435;
+  color:white;
+  cursor:pointer;
+}
+
+.cluster-controls button.active{
+  background:#4fd1ff;
+  color:black;
+}
+.galaxy-search{
+  flex: 1;
+  min-width: 120px;
+  max-width: 500px;
+
+  padding: 10px 16px;
+  border-radius: 20px;
+  border: none;
+
+  background: #111e35;
+  color: white;
+
+  outline: none;
+}

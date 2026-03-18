@@ -1,0 +1,62 @@
+CREATE DATABASE photo_dashboard;
+
+CREATE TABLE photos (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  filename VARCHAR(255),
+  url VARCHAR(255),
+  location VARCHAR(255),
+  person VARCHAR(255),
+  isFav BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+ALTER TABLE photos
+ADD COLUMN date_taken DATETIME,
+ADD COLUMN camera VARCHAR(255),
+ADD COLUMN latitude DOUBLE,
+ADD COLUMN longitude DOUBLE;
+
+ALTER TABLE photos
+ADD COLUMN thumbnail VARCHAR(255);
+
+
+CREATE TABLE albums (
+ id INT AUTO_INCREMENT PRIMARY KEY,
+ name VARCHAR(255),
+ created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE album_photos (
+ album_id INT,
+ photo_id INT,
+ PRIMARY KEY(album_id,photo_id)
+);
+
+
+CREATE TABLE people (
+ id INT AUTO_INCREMENT PRIMARY KEY,
+ name VARCHAR(255)
+);
+
+CREATE TABLE photo_people (
+ photo_id INT,
+ person_id INT
+);
+
+
+CREATE TABLE people (
+ id INT AUTO_INCREMENT PRIMARY KEY,
+ name VARCHAR(255)
+);
+
+CREATE TABLE photo_people (
+ photo_id INT,
+ person_id INT
+);
+
+CREATE TABLE face_encodings (
+ id INT AUTO_INCREMENT PRIMARY KEY,
+ photo_id INT,
+ encoding JSON
+);
