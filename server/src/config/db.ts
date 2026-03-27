@@ -1,11 +1,14 @@
-import mysql from "mysql2/promise"
+import mongoose from "mongoose";
 
-const db = mysql.createPool({
-  host: "localhost",
-  user: "root",
-  password: "yourpassword",
-  database: "photo_dashboard",
-  connectionLimit: 10
-})
+const connectDB = async () => {
+  try {
+    await mongoose.connect("mongodb+srv://nksharmassm1999:Nand%40%231234@expensecluster.abmqlet.mongodb.net/?appName=ExpenseCluster");
 
-export default db
+    console.log("✅ MongoDB Connected");
+  } catch (err) {
+    console.error("❌ DB Error:", err);
+    process.exit(1);
+  }
+};
+
+export default connectDB;
