@@ -8,8 +8,9 @@ app = Flask(__name__)
 
 @app.route("/detect-faces", methods=["POST"])
 def detect_faces():
-
+    print(request.files)
     if "image" not in request.files:
+        print("❌ No image received")
         return jsonify({"error": "No image uploaded"}), 400
 
     file = request.files["image"]

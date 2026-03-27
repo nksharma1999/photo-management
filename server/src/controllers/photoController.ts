@@ -1,7 +1,13 @@
 import exifr from "exifr";
 import db from "../config/db";
+import fs from "fs";
 import sharp from "sharp";
+import fetch, { FormData, Blob } from "node-fetch";
 import { getImageMetadata } from "../services/metadataService";
+import Photo from "../model/Photo";
+import FaceEmbedding from "../model/FaceEmbedding";
+import Album from "../model/Album";
+import Person from "../model/Person";
 
 export const uploadPhoto = async (req: any, res: any) => {
   try {
@@ -12,35 +18,61 @@ export const uploadPhoto = async (req: any, res: any) => {
     }
 
     const filepath = file.path;
-
+    // ✅ 1. Generate thumbnail
     const thumbPath = `thumbnails/${file.filename}`;
     await sharp(filepath).resize(300).toFile(thumbPath);
 
+    // ✅ 2. Extract metadata
     const metadata = await getImageMetadata(filepath);
+    // ✅ 3. Save photo in DB
+    const photo = await Photo.create({
+      filename: file.filename,
+      url: `/uploads/${file.filename}`,
+      thumbnail: `/thumbnails/${file.filename}`,
+      dateTaken: metadata?.DateTimeOriginal,
+      camera: metadata?.Model,
+      latitude: metadata?.latitude,
+      longitude: metadata?.longitude
+    });
 
-    const dateTaken = metadata?.DateTimeOriginal || null;
-    const camera = metadata?.Model || null;
-    const lat = metadata?.latitude || null;
-    const lng = metadata?.longitude || null;
-    const filename = file.filename;
-    const url = `/uploads/${filename}`;
-    const thumbnail = `/thumbnails/${file.filename}`;
+    // ✅ 4. Call AI Service for face detection
+    let embeddings: number[][] = [];
 
-    const query = `
-      INSERT INTO photos
-      (filename,url,thumbnail,date_taken,camera,latitude,longitude)
-      VALUES (?,?,?,?,?,?)
-    `;
+    try {
+      const buffer = fs.readFileSync(filepath);
+      const form = new FormData();
+      form.append("image", new Blob([buffer]), file.filename);
+      const response = await fetch("http://localhost:4001/detect-faces", {
+        method: "POST",
+        body: form,
+      });
 
-    // await db.execute(query, [filename, url,thumbnail, dateTaken, camera, lat, lng]);
-
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(`HTTP ${response.status}: ${text}`);
+      }
+      const data:any = await response.json();
+      // console.log("AI Service Response:", data);
+      
+      embeddings = data.embeddings || [];
+    } catch (err) {
+      console.error("AI Service Error:", err);
+    }
+    // ✅ 5. Save embeddings in DB
+    for (const emb of embeddings) {
+      await FaceEmbedding.create({
+        photoId: photo._id,
+        embedding: emb
+      });
+    }
+    // ✅ 6. Response
     res.json({
       message: "Photo uploaded",
-      url,
-      thumbnail,
-      metadata,
+      photo,
+      facesDetected: embeddings.length,
     });
   } catch (err) {
+    console.error(err);
     res.status(500).json(err);
   }
 };
@@ -52,14 +84,11 @@ export const getPhotos = async (req: any, res: any) => {
 
     const offset = (page - 1) * limit;
 
-    const [rows] = await db.query(
-      `SELECT * FROM photos
-       ORDER BY created_at DESC
-       LIMIT ? OFFSET ?`,
-      [limit, offset],
-    );
+    const photos = await Photo.find()
+    .sort({ createdAt: -1 })
+    .limit(50);
 
-    res.json(rows);
+    res.json(photos);
   } catch (err) {
     res.status(500).json(err);
   }
@@ -74,7 +103,7 @@ export const toggleFavorite = async (req: any, res: any) => {
     WHERE id = ?
   `;
 
-  await db.execute(query, [id]);
+  // await db.execute(query, [id]);
 
   res.json({ message: "Favorite updated" });
 };
@@ -82,17 +111,33 @@ export const toggleFavorite = async (req: any, res: any) => {
 export const deletePhoto = async (req: any, res: any) => {
   const id = req.params.id;
 
-  await db.execute("DELETE FROM photos WHERE id=?", [id]);
+  // await db.execute("DELETE FROM photos WHERE id=?", [id]);
 
   res.json({ message: "Photo deleted" });
 };
 
-export const getPhotoCount = async(req:any,res:any)=>{
+// export const getPhotoCount = async(req:any,res:any)=>{
 
- const [rows]:any = await db.query(
-   "SELECT COUNT(*) as total FROM photos"
- )
+// //  const [rows]:any = await db.query(
+// //    "SELECT COUNT(*) as total FROM photos"
+// //  )
 
- res.json(rows[0])
+// //  res.json(rows[0])
 
-}
+// }
+
+export const addToAlbum = async (req: any, res: any) => {
+
+  const { albumId, photoId } = req.body;
+
+  await Album.findByIdAndUpdate(albumId, {
+    $addToSet: { photos: photoId }
+  });
+
+  await Photo.findByIdAndUpdate(photoId, {
+    $addToSet: { albums: albumId }
+  });
+
+  res.json({ message: "Added to album" });
+
+};
