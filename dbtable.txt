@@ -3,3 +3,5 @@ If you want, next I can give you:
 👉 Face search API (very powerful feature)
 👉 How to match embeddings efficiently
 👉 UI integration for People section
+
+https://www.kaggle.com/datasets/rmamun/kerasfaceneth5
