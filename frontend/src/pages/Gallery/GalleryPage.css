@@ -98,3 +98,8 @@
     font-size: 12px;
     border-radius: 6px;
 }
+.gallery-tabs button.active {
+  background: #1e2b4a;
+  color: white;
+  border-radius: 8px;
+}

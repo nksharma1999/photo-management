@@ -1,24 +1,34 @@
 import Masonry from "react-masonry-css";
 import "./PhotoGrid.css";
-
-const photos = [
-  "https://picsum.photos/400/600",
-  "https://picsum.photos/400/500",
-  "https://picsum.photos/400/700",
-  "https://picsum.photos/400/450",
-  "https://picsum.photos/400/650",
-  "https://picsum.photos/400/500",
-  "https://picsum.photos/400/600",
-  "https://picsum.photos/400/450"
-];
+import axios from "axios";
+import { useEffect, useState } from "react";
+import { BaseIP, BaseIPForThumbnails } from "../../data/BaseIP";
 
 export default function PhotoGrid() {
+  const [photos, setPhotos] = useState<string[]>([]);
+
+  useEffect(() => {
+    const fetchPhotos = async () => {
+      try {
+        const res = await axios.get(`${BaseIP}/photos/recent`);
+        setPhotos(res.data || []);
+      } catch (err) {
+        console.error("Failed to fetch photos", err);
+      }
+    };
+
+    fetchPhotos();
+  }, []);
   const breakpointColumns = {
     default: 4,
     1200: 3,
     900: 2,
-    600: 1
+    600: 1,
   };
+
+  const items: string[] = photos.length
+    ? photos
+    : Array.from({ length: 8 }).map((_, i) => `https://picsum.photos/seed/${i}/400/600`);
 
   return (
     <div className="photo-section">
@@ -29,9 +39,9 @@ export default function PhotoGrid() {
         className="photo-masonry"
         columnClassName="photo-column"
       >
-        {photos.map((src, i) => (
-          <div className="photo-card" key={i}>
-            <img src={src} alt="photo" />
+        {items.map((p, i) => (
+          <div className="photo-card" key={String(i)}>
+            <img src={BaseIPForThumbnails + p} alt="photo" />
           </div>
         ))}
       </Masonry>

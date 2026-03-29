@@ -61,11 +61,19 @@ export const mergePeople = async (req: any, res: any) => {
   }
 };
 export const getPersonPhotos = async (req: any, res: any) => {
-  const { id } = req.params;
+  try {
+    const { id } = req.params;
 
-  const person = await Person.findById(id).populate("photos");
+    const person = await Person.findById(id).populate({ path: "photos", select: "_id url thumbnail isFav" }).lean();
 
-  res.json(person);
+    if (!person) return res.status(404).json({ message: "Person not found" });
+
+    const photos = (person.photos || []).map((p: any) => ({ _id: p._id, url: p.url, thumbnail: p.thumbnail ,isFav: p.isFav}));
+
+    res.json({ _id: person._id, name: person.name, photos });
+  } catch (err) {
+    res.status(500).json(err);
+  }
 };
 export const deletePerson = async (req: any, res: any) => {
 

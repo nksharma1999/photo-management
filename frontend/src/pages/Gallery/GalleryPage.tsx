@@ -1,49 +1,69 @@
 import "./GalleryPage.css";
 import PhotoCard from "./PhotoCard";
+import axios from "axios";
+import { useEffect, useState } from "react";
+import { BaseIP, BaseIPForThumbnails } from "../../data/BaseIP";
+import { useLocation, useNavigate } from "react-router-dom";
 
-const photos = [
-  {
-    id: 1,
-    src: "https://picsum.photos/500/400?1",
-    date: "Today",
-    location: "Tokyo, Japan",
-    type: "photo",
-  },
-  {
-    id: 2,
-    src: "https://picsum.photos/500/400?2",
-    date: "Today",
-    location: "Tokyo, Japan",
-    type: "photo",
-  },
-  {
-    id: 3,
-    src: "https://picsum.photos/500/400?3",
-    date: "Today",
-    location: "Tokyo, Japan",
-    type: "photo",
-  },
-  {
-    id: 4,
-    src: "https://picsum.photos/500/400?4",
-    date: "Yesterday",
-    location: "Kyoto, Japan",
-    type: "video",
-  },
-];
+type Photo = { _id: string; url?: string; thumbnail?: string; isFav?: boolean };
+type Group = { date: string; photos: Photo[] };
 
 export default function GalleryPage() {
-  const todayPhotos = photos.filter((p) => p.date === "Today");
-  const yesterdayPhotos = photos.filter((p) => p.date === "Yesterday");
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const isFavorites = location.pathname.includes("favorites");
+  const isAlbums = location.pathname.includes("albums");
+  const [groups, setGroups] = useState<Group[]>([]);
+
+  useEffect(() => {
+    const fetch = async () => {
+      try {
+        const res = await axios.get(`${BaseIP}/photos/by-date`);
+        setGroups(res.data || []);
+      } catch (err) {
+        console.error("Failed to load gallery groups", err);
+      }
+    };
+
+    fetch();
+  }, []);
+
+  const fmtDate = (d: string) => {
+    try {
+      const dt = new Date(d + "T00:00:00Z");
+      return dt.toLocaleDateString(undefined, {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      });
+    } catch {
+      return d;
+    }
+  };
 
   return (
     <div className="gallery-page">
-      {/* Top Tabs */}
       <div className="gallery-tabs">
-        <button className="active">All Photos</button>
-        <button>Favorites</button>
+        <button
+          className={!isFavorites  && !isAlbums ? "active" : ""}
+          onClick={() => navigate("/gallery")}
+        >
+          All Photos
+        </button>
+        <button
+          className={isFavorites ? "active" : ""}
+          onClick={() => navigate("/gallery/favorites")}
+        >
+          Favorites
+        </button>
         <button>Videos</button>
-        <button>Albums</button>
+        <button
+          className={isAlbums ? "active" : ""}
+          onClick={() => navigate("/gallery/albums")}
+        >
+          Albums
+        </button>
 
         <div className="gallery-actions">
           <button>Filters</button>
@@ -51,34 +71,42 @@ export default function GalleryPage() {
         </div>
       </div>
 
-      {/* Today Section */}
-      <div className="gallery-section">
-        <div className="gallery-header">
-          <h2>Today</h2>
-          <span>Oct 24, 2023 • Tokyo, Japan</span>
-        </div>
+      {groups.map((g) => {
+        const filteredPhotos = isFavorites
+          ? g.photos.filter((p) => p.isFav)
+          : g.photos;
 
-        <div className="gallery-grid">
-          {todayPhotos.map((photo) => (
-            <PhotoCard key={photo.id} src={photo.src} type={photo.type} />
-          ))}
-        </div>
-      </div>
+        if (filteredPhotos.length === 0) return null;
 
-      {/* Yesterday Section */}
+        return (
+          <div className="gallery-section" key={g.date}>
+            <div className="gallery-header">
+              <h2>{fmtDate(g.date)}</h2>
+              <span>{g.date}</span>
+            </div>
 
-      <div className="gallery-section">
-        <div className="gallery-header">
-          <h2>Yesterday</h2>
-          <span>Oct 23, 2023 • Kyoto, Japan</span>
-        </div>
+            <div className="gallery-grid">
+              {filteredPhotos.map((p) => {
+                const src = p.thumbnail
+                  ? p.thumbnail.startsWith("/")
+                    ? `${BaseIPForThumbnails}${p.thumbnail}`
+                    : p.thumbnail
+                  : p.url || "";
 
-        <div className="gallery-grid">
-          {yesterdayPhotos.map((photo) => (
-            <PhotoCard key={photo.id} src={photo.src} type={photo.type} />
-          ))}
-        </div>
-      </div>
+                return (
+                  <PhotoCard
+                    key={p._id}
+                    src={src}
+                    isFavorite={p.isFav}
+                    type="photo"
+                    _id={p._id}
+                  />
+                );
+              })}
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }

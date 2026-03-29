@@ -1,0 +1,110 @@
+.albums-page {
+  padding: 20px;
+  color: white;
+}
+
+/* HEADER */
+.albums-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.create-btn {
+
+  background: #1e2b4a;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+}
+
+/* GRID */
+.albums-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 20px;
+}
+
+/* CARD */
+.album-card {
+  background: #111e35;
+  border-radius: 14px;
+  overflow: hidden;
+  transition: 0.3s;
+  cursor: pointer;
+}
+
+.album-card:hover {
+  transform: translateY(-5px);
+}
+
+/* IMAGE */
+.album-image {
+  position: relative;
+}
+
+.album-image img {
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+}
+
+/* OVERLAY */
+.album-overlay {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  background: linear-gradient(transparent, rgba(0,0,0,0.7));
+  padding: 6px;
+  font-size: 12px;
+}
+
+/* INFO */
+.album-info {
+  padding: 10px;
+  font-size: 14px;
+}
+
+/* MODAL */
+.modal-overlay {
+        z-index: 100;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal {
+  background: #111e35;
+  padding: 20px;
+  border-radius: 12px;
+  width: 300px;
+}
+
+.modal input {
+  width: 100%;
+  padding: 8px;
+  margin: 10px 0;
+  background: #0f1a2b;
+  border: none;
+  color: white;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: space-between;
+}
+
+/* EMPTY */
+.empty-state {
+  text-align: center;
+  margin-top: 50px;
+}

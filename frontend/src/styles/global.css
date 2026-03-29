@@ -183,29 +183,29 @@ body {
   }
 }
 
-/* people page */
+/* albums page */
 
-.people-page {
-  padding: 20px;
-}
-
-.people-grid {
+.albums-grid {
+   padding: 30px;
+    color: white;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
   gap: 20px;
 }
 
-.person-card {
+.album-card {
   background: #111e35;
-  padding: 10px;
   border-radius: 12px;
-  text-align: center;
+  overflow: hidden;
   cursor: pointer;
 }
 
-.person-card img {
+.album-card img {
   width: 100%;
   height: 120px;
   object-fit: cover;
-  border-radius: 10px;
+}
+
+.album-info {
+  padding: 10px;
 }

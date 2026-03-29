@@ -5,3 +5,4 @@ If you want, next I can give you:
 👉 UI integration for People section
 
 https://www.kaggle.com/datasets/rmamun/kerasfaceneth5
+npm install --ignore-scripts sharp

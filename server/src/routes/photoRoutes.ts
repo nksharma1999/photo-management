@@ -1,6 +1,6 @@
 import express from "express"
 import multer from "multer"
-import { deletePhoto, getPhotos, toggleFavorite, uploadPhoto } from "../controllers/photoController"
+import { deletePhoto, getPhotos, getRecentPhotos, getPhotosByDate, toggleFavorite, uploadPhoto } from "../controllers/photoController"
 import db from "../config/db"
 
 const router = express.Router()
@@ -15,10 +15,12 @@ const storage = multer.diskStorage({
 const upload = multer({ storage })
 
 router.get("/",getPhotos)
+router.get("/recent", getRecentPhotos)
+router.get("/by-date", getPhotosByDate)
 
 router.post("/upload",upload.single("photo"),uploadPhoto)
 
-router.patch("/:id/fav",toggleFavorite)
+router.patch("/:id/favorite",toggleFavorite)
 
 router.delete("/:id",deletePhoto)
 

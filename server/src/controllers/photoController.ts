@@ -32,7 +32,7 @@ export const uploadPhoto = async (req: any, res: any) => {
       dateTaken: metadata?.DateTimeOriginal,
       camera: metadata?.Model,
       latitude: metadata?.latitude,
-      longitude: metadata?.longitude
+      longitude: metadata?.longitude,
     });
 
     // ✅ 4. Call AI Service for face detection
@@ -51,9 +51,9 @@ export const uploadPhoto = async (req: any, res: any) => {
         const text = await response.text();
         throw new Error(`HTTP ${response.status}: ${text}`);
       }
-      const data:any = await response.json();
+      const data: any = await response.json();
       // console.log("AI Service Response:", data);
-      
+
       embeddings = data.embeddings || [];
     } catch (err) {
       console.error("AI Service Error:", err);
@@ -62,7 +62,7 @@ export const uploadPhoto = async (req: any, res: any) => {
     for (const emb of embeddings) {
       await FaceEmbedding.create({
         photoId: photo._id,
-        embedding: emb
+        embedding: emb,
       });
     }
     // ✅ 6. Response
@@ -84,9 +84,7 @@ export const getPhotos = async (req: any, res: any) => {
 
     const offset = (page - 1) * limit;
 
-    const photos = await Photo.find()
-    .sort({ createdAt: -1 })
-    .limit(50);
+    const photos = await Photo.find().sort({ createdAt: -1 }).limit(50);
 
     res.json(photos);
   } catch (err) {
@@ -94,18 +92,69 @@ export const getPhotos = async (req: any, res: any) => {
   }
 };
 
+export const getRecentPhotos = async (req: any, res: any) => {
+  try {
+    const photos = await Photo.find()
+      .sort({ createdAt: -1 })
+      .limit(10)
+      .select("thumbnail url -_id");
+
+    const urls = photos.map((p: any) => p.thumbnail || p.url).filter(Boolean);
+
+    res.json(urls);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+};
+
+export const getPhotosByDate = async (req: any, res: any) => {
+  try {
+    const rows: any = await Photo.aggregate([
+      {
+        $addFields: {
+          dateForGroup: { $ifNull: ["$dateTaken", "$createdAt"] },
+        },
+      },
+      {
+        $project: {
+          url: 1,
+          thumbnail: 1,
+          isFav:1,
+          createdAt: 1,
+          dateStr: {
+            $dateToString: { format: "%Y-%m-%d", date: "$dateForGroup" },
+          },
+        },
+      },
+      { $sort: { dateStr: -1, createdAt: -1 } },
+      {
+        $group: {
+          _id: "$dateStr",
+          photos: {
+            $push: { _id: "$_id", url: "$url", thumbnail: "$thumbnail", isFav: "$isFav", createdAt: "$createdAt" },
+          },
+        },
+      },
+      { $sort: { _id: -1 } },
+    ]);
+
+    const result = rows.map((r: any) => ({ date: r._id, photos: r.photos }));
+    res.json(result);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+};
+
 export const toggleFavorite = async (req: any, res: any) => {
-  const id = req.params.id;
+  try {
+    const id = req.params.id;
+    const { favorite } = req.body;
+    await Photo.findByIdAndUpdate(id, { isFav: favorite });
 
-  const query = `
-    UPDATE photos
-    SET isFav = NOT isFav
-    WHERE id = ?
-  `;
-
-  // await db.execute(query, [id]);
-
-  res.json({ message: "Favorite updated" });
+    res.json({ message: "Favorite updated" });
+  } catch (err) {
+    res.status(500).json(err);
+  }
 };
 
 export const deletePhoto = async (req: any, res: any) => {
@@ -127,17 +176,15 @@ export const deletePhoto = async (req: any, res: any) => {
 // }
 
 export const addToAlbum = async (req: any, res: any) => {
-
   const { albumId, photoId } = req.body;
 
   await Album.findByIdAndUpdate(albumId, {
-    $addToSet: { photos: photoId }
+    $addToSet: { photos: photoId },
   });
 
   await Photo.findByIdAndUpdate(photoId, {
-    $addToSet: { albums: albumId }
+    $addToSet: { albums: albumId },
   });
 
   res.json({ message: "Added to album" });
-
 };

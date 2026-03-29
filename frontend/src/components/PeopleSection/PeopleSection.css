@@ -54,3 +54,28 @@
 .map-section:hover {
   transform: translateY(-3px);
 }
+
+/* hide edit icon */
+.edit-icon {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  opacity: 0;
+  transition: 0.2s;
+  cursor: pointer;
+}
+
+/* show on hover */
+.person-card:hover .edit-icon {
+  opacity: 1;
+}
+
+/* input styling */
+.person-info input {
+  width: 100%;
+  background: #0f1a2b;
+  border: none;
+  color: white;
+  padding: 4px;
+  border-radius: 6px;
+}

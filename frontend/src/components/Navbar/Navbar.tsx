@@ -12,7 +12,7 @@ export default function Navbar({ toggleSidebar }: Props) {
     formData.append("photo", file);
 
     const res = await axios.post(
-      "http://localhost:5000/api/photos/upload",
+      "http://localhost:5001/api/photos/upload",
       formData,
       {
         headers: {
