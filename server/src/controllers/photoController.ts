@@ -1,13 +1,13 @@
-import exifr from "exifr";
-import db from "../config/db";
-import fs from "fs";
 import sharp from "sharp";
-import fetch, { FormData, Blob } from "node-fetch";
 import { getImageMetadata } from "../services/metadataService";
 import Photo from "../model/Photo";
-import FaceEmbedding from "../model/FaceEmbedding";
 import Album from "../model/Album";
 import Person from "../model/Person";
+import { promises as fsPromises } from "fs";
+import path from "path";
+import fetch, { FormData, Blob } from "node-fetch";
+import FaceEmbedding from "../model/FaceEmbedding";
+import { execFileSync } from "child_process";
 
 export const uploadPhoto = async (req: any, res: any) => {
   try {
@@ -18,13 +18,39 @@ export const uploadPhoto = async (req: any, res: any) => {
     }
 
     const filepath = file.path;
-    // ✅ 1. Generate thumbnail
+    // 1. Generate thumbnail (try sharp; if HEIC fails, try external converter)
     const thumbPath = `thumbnails/${file.filename}`;
-    await sharp(filepath).resize(300).toFile(thumbPath);
+    let thumbCreated = false;
+    try {
+      await sharp(filepath).resize(300).toFile(thumbPath);
+      thumbCreated = true;
+    } catch (err: any) {
+      console.warn("sharp thumbnail creation failed:", err.message || err);
+      const ext = path.extname(filepath).toLowerCase();
+      if (ext === ".heic" || ext === ".heif") {
+        try {
+          // try heif-convert (from libheif)
+          const converted = `${filepath}.jpg`;
+          try {
+            execFileSync("heif-convert", [filepath, converted]);
+          } catch (e1) {
+            // fallback to ImageMagick `magick` if installed
+            execFileSync("magick", [filepath, converted]);
+          }
 
-    // ✅ 2. Extract metadata
+          await sharp(converted).resize(300).toFile(thumbPath);
+          thumbCreated = true;
+          await fsPromises.unlink(converted).catch(() => {});
+        } catch (e2: any) {
+          console.error("HEIC conversion failed:", e2.message || e2);
+        }
+      }
+    }
+
+    // 2. Extract metadata
     const metadata = await getImageMetadata(filepath);
-    // ✅ 3. Save photo in DB
+
+    // 3. Save photo in DB and mark as not processed so the AI worker can pick it up later
     const photo = await Photo.create({
       filename: file.filename,
       url: `/uploads/${file.filename}`,
@@ -33,46 +59,67 @@ export const uploadPhoto = async (req: any, res: any) => {
       camera: metadata?.Model,
       latitude: metadata?.latitude,
       longitude: metadata?.longitude,
+      processed: false,
+      facesDetected: 0,
     });
 
-    // ✅ 4. Call AI Service for face detection
-    let embeddings: number[][] = [];
-
-    try {
-      const buffer = fs.readFileSync(filepath);
-      const form = new FormData();
-      form.append("image", new Blob([buffer]), file.filename);
-      const response = await fetch("http://localhost:4001/detect-faces", {
-        method: "POST",
-        body: form,
-      });
-
-      if (!response.ok) {
-        const text = await response.text();
-        throw new Error(`HTTP ${response.status}: ${text}`);
-      }
-      const data: any = await response.json();
-      // console.log("AI Service Response:", data);
-
-      embeddings = data.embeddings || [];
-    } catch (err) {
-      console.error("AI Service Error:", err);
-    }
-    // ✅ 5. Save embeddings in DB
-    for (const emb of embeddings) {
-      await FaceEmbedding.create({
-        photoId: photo._id,
-        embedding: emb,
-      });
-    }
-    // ✅ 6. Response
-    res.json({
-      message: "Photo uploaded",
-      photo,
-      facesDetected: embeddings.length,
-    });
+    // Don't call AI here — background worker should process unprocessed photos.
+    // Return immediately so uploads are fast.
+    res.json({ message: "Photo uploaded", photo, processingQueued: true });
   } catch (err) {
     console.error(err);
+    res.status(500).json(err);
+  }
+};
+
+export const getUnprocessedPhotos = async (req: any, res: any) => {
+  try {
+    const photos = await Photo.find({ processed: false }).select("_id url thumbnail filename").sort({ createdAt: 1 });
+    res.json(photos);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+};
+
+export const processAllUnprocessed = async (req: any, res: any) => {
+  try {
+    const photos = await Photo.find({ processed: false }).select("_id url filename").sort({ createdAt: 1 }).lean();
+
+    // start background processing (fire-and-forget)
+    (async () => {
+      for (const p of photos) {
+        try {
+          const rel = p.url && p.url.startsWith("/") ? p.url.slice(1) : p.url;
+          const filepath = path.join(process.cwd(), rel || "");
+          const buffer = await fsPromises.readFile(filepath);
+          const form = new FormData();
+          form.append("image", new Blob([buffer]), p.filename || "image.jpg");
+
+          const aiRes = await fetch("http://localhost:4001/detect-faces", { method: "POST", body: form });
+          if (!aiRes.ok) {
+            console.error(`AI service failed for ${p._id}: ${aiRes.status}`);
+            continue;
+          }
+
+          const data: any = await aiRes.json();
+          const embeddings = data.embeddings || [];
+
+          const created: any[] = [];
+          for (const emb of embeddings) {
+            if (!Array.isArray(emb)) continue;
+            const doc = await FaceEmbedding.create({ photoId: p._id, embedding: emb, processed: false });
+            created.push(doc);
+          }
+
+          await Photo.findByIdAndUpdate(p._id, { processed: true, facesDetected: created.length });
+        } catch (err) {
+          console.error("Error processing photo", p._id, err);
+        }
+      }
+    })();
+
+    res.json({ message: "Processing started", queued: photos.length });
+  } catch (err) {
     res.status(500).json(err);
   }
 };

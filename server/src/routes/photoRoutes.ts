@@ -1,6 +1,6 @@
 import express from "express"
 import multer from "multer"
-import { deletePhoto, getPhotos, getRecentPhotos, getPhotosByDate, toggleFavorite, uploadPhoto } from "../controllers/photoController"
+import { deletePhoto, getPhotos, getRecentPhotos, getPhotosByDate, getUnprocessedPhotos, processAllUnprocessed, toggleFavorite, uploadPhoto } from "../controllers/photoController"
 import db from "../config/db"
 
 const router = express.Router()
@@ -17,6 +17,9 @@ const upload = multer({ storage })
 router.get("/",getPhotos)
 router.get("/recent", getRecentPhotos)
 router.get("/by-date", getPhotosByDate)
+router.get("/unprocessed", getUnprocessedPhotos)
+// router.post("/:id/process", processPhotoResults)
+router.post("/process-all", processAllUnprocessed)
 
 router.post("/upload",upload.single("photo"),uploadPhoto)
 

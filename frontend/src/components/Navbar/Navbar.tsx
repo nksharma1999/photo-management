@@ -21,7 +21,8 @@ export default function Navbar({ toggleSidebar }: Props) {
       },
     );
 
-    console.log(res.data);
+    // console.log(res.data);
+    alert("Photo uploaded successfully");
   };
   return (
     <div className="navbar">

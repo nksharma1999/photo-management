@@ -12,6 +12,7 @@ type Person = {
 };
 
 export default function PeoplePage() {
+  const [processing, setProcessing] = useState(false);
   const [people, setPeople] = useState<Person[]>([]);
   const navigate = useNavigate();
   const fetchPeople = async () => {
@@ -36,11 +37,41 @@ export default function PeoplePage() {
     fetchData();
   }, []);
 
+  const startFaceDetection = async () => {
+    try {
+      setProcessing(true);
+      const res = await axios.post(`${BaseIP}/photos/process-all`);
+      console.log(res.data);
+      alert(`Started face detection for ${res.data.queued} photos`);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to start face detection");
+    } finally {
+      setProcessing(false);
+    }
+  };
+
   return (
     <div className="people-section">
-      <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'20px'}}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "20px",
+        }}
+      >
         <h3>Peoples</h3>
-        <button className="upload" onClick={clusterImage}>Cluster</button>
+        <button
+          onClick={startFaceDetection}
+          disabled={processing}
+          className="upload"
+        >
+          {processing ? "Starting..." : "Run Face Detection"}
+        </button>
+        <button className="upload" onClick={clusterImage}>
+          Cluster
+        </button>
       </div>
       <div className="people-grid">
         {people.map((p, i) => (
