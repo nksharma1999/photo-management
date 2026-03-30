@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import { BaseIP, BaseIPForThumbnails } from "../../data/BaseIP";
+import PhotoCard from "../Gallery/PhotoCard";
 
 export default function AlbumDetails() {
   const { id } = useParams();
@@ -21,9 +22,15 @@ export default function AlbumDetails() {
 
       <div className="gallery-grid">
         {album.photos.map((p: any) => (
-          <img
+          <PhotoCard
+            deletePermanently={false}
+            _id={p._id}
+            isFavorite={p.isFav}
             key={p._id}
-            src={`${BaseIPForThumbnails}${p.thumbnail}`}
+            src={BaseIPForThumbnails + p.thumbnail}
+            type={""}
+            disableAddToAlbum={true}
+            albumIdToDelete={album._id}
           />
         ))}
       </div>

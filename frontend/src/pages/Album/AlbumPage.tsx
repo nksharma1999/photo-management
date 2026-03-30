@@ -1,8 +1,9 @@
-import  "./Album.css";
+import "./Album.css";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { BaseIP, BaseIPForThumbnails } from "../../data/BaseIP";
 import { useNavigate } from "react-router-dom";
+import AlbumCard from "./AlbumCard";
 
 type Album = {
   _id: string;
@@ -14,11 +15,11 @@ export default function AlbumsPage() {
   const [albums, setAlbums] = useState<Album[]>([]);
   const [showCreate, setShowCreate] = useState(false);
   const [newName, setNewName] = useState("");
-  const navigate = useNavigate();
 
   const fetchAlbums = async () => {
     try {
       const res = await axios.get(`${BaseIP}/albums`);
+    //   console.log("Fetched albums", res.data);
       setAlbums(res.data || []);
     } catch (err) {
       console.error("Failed to fetch albums", err);
@@ -87,7 +88,16 @@ export default function AlbumsPage() {
 
       {/* GRID */}
       <div className="albums-grid">
-        {albums.map((a, index) => (
+        {albums.map((album) => (
+          <AlbumCard
+            navigateTo={`/albums/${album._id}`}
+            key={album._id}
+            album={album}
+            onEdit={(id) => console.log("Edit", id)}
+            onDelete={(id) => console.log("Delete", id)}
+          />
+        ))}
+        {/* {albums.map((a, index) => (
           <div
             key={a._id}
             className="album-card"
@@ -111,7 +121,7 @@ export default function AlbumsPage() {
               <p>{a.name}</p>
             </div>
           </div>
-        ))}
+        ))} */}
       </div>
     </div>
   );

@@ -96,6 +96,7 @@ export default function GalleryPage() {
 
                 return (
                   <PhotoCard
+                    deletePermanently={true}
                     key={p._id}
                     src={src}
                     isFavorite={p.isFav}

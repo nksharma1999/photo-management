@@ -205,11 +205,31 @@ export const toggleFavorite = async (req: any, res: any) => {
 };
 
 export const deletePhoto = async (req: any, res: any) => {
-  const id = req.params.id;
+  try {
+    const id = req.params.id;
+    const photo = await Photo.findByIdAndDelete(id);
 
-  // await db.execute("DELETE FROM photos WHERE id=?", [id]);
+    if (photo) {
+      // remove from albums
+      await Album.updateMany({ photos: id }, { $pull: { photos: id } });
+      // remove from people
+      await Person.updateMany({ photos: id }, { $pull: { photos: id } });
+      // remove face embeddings
+      await FaceEmbedding.deleteMany({ photoId: id });
 
-  res.json({ message: "Photo deleted" });
+      // delete files
+      const url = photo.url || "";
+      const filepath = path.join(process.cwd(), url.startsWith("/") ? url.slice(1) : url);
+      const thumbnail = photo.thumbnail || "";
+      const thumbpath = path.join(process.cwd(), thumbnail.startsWith("/") ? thumbnail.slice(1) : thumbnail);
+      await fsPromises.unlink(filepath).catch(() => {});
+      await fsPromises.unlink(thumbpath).catch(() => {});
+    }
+
+    res.json({ message: "Photo deleted" });
+  } catch (err) {
+    res.status(500).json(err);
+  }
 };
 
 // export const getPhotoCount = async(req:any,res:any)=>{

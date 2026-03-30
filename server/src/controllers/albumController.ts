@@ -33,7 +33,7 @@ export const createAlbum = async (req: any, res: any) => {
 export const getAlbumById = async (req: any, res: any) => {
   try {
     const { id } = req.params;
-    const album = await Album.findById(id).populate({ path: "photos", select: "_id url thumbnail" }).lean();
+    const album = await Album.findById(id).populate({ path: "photos", select: "_id url thumbnail isFav" }).lean();
     if (!album) return res.status(404).json({ message: "Album not found" });
     res.json(album);
   } catch (err) {
