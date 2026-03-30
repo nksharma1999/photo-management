@@ -66,7 +66,7 @@ export default function Dashboard() {
           icon={<FiMapPin color="yellow" />}
         />
         <StatsCard
-          navigateTo="/gallery/albums"
+          navigateTo="/albums"
           title="Albums"
           value={stats ? stats.albums.toLocaleString() : "—"}
           icon={<FiFolder color="red" />}

@@ -28,6 +28,10 @@ export default function Sidebar({ open, setOpen }: Props) {
             <FiImage /> Gallery
           </NavLink>
 
+          <NavLink to="/albums">
+            <FiUsers /> Albums
+          </NavLink>
+
           <NavLink to="/people">
             <FiUsers /> People
           </NavLink>

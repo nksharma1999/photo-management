@@ -14,7 +14,7 @@ function cosineSimilarity(a: number[], b: number[]) {
   return dot / (Math.sqrt(normA) * Math.sqrt(normB));
 }
 
-const THRESHOLD = 0.6;
+const THRESHOLD = 0.75;
 
 export const clusterFaces = async () => {
 

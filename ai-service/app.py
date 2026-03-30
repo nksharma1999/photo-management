@@ -3,6 +3,7 @@ from deepface import DeepFace
 import numpy as np
 import cv2
 import tempfile
+import os
 
 app = Flask(__name__)
 
@@ -18,6 +19,8 @@ def detect_faces():
     # Save temporary image
     temp = tempfile.NamedTemporaryFile(delete=False, suffix=".jpg")
     file.save(temp.name)
+    temp.close()
+    temp_path = temp.name
 
     try:
 
@@ -31,7 +34,6 @@ def detect_faces():
         embeddings = []
 
         for face in faces:
-
             embedding = DeepFace.represent(
                 img_path=temp.name,
                 model_name="Facenet",
@@ -52,6 +54,12 @@ def detect_faces():
         return jsonify({
             "error": str(e)
         }), 500
+
+    finally:
+        try:
+            os.remove(temp_path)
+        except PermissionError:
+            print(f"⚠️ Could not delete temp file: {temp_path}")
 
 
 @app.route("/health")

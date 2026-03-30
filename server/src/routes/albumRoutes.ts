@@ -7,12 +7,14 @@ import {
   deleteAlbum,
   addPhotoToAlbum,
   removePhotoFromAlbum,
+  getAlbumIdAndName,
 } from "../controllers/albumController";
 
 const router = express.Router();
 
 router.get("/", getAlbums);
 router.post("/", createAlbum);
+router.get("/idname", getAlbumIdAndName)
 router.get("/:id", getAlbumById);
 router.patch("/:id", updateAlbum);
 router.delete("/:id", deleteAlbum);

@@ -14,6 +14,7 @@ type Person = {
 export default function PeoplePage() {
   const [processing, setProcessing] = useState(false);
   const [people, setPeople] = useState<Person[]>([]);
+  
   const navigate = useNavigate();
   const fetchPeople = async () => {
     const res = await fetch(`${BaseIP}/people`);
@@ -81,6 +82,7 @@ export default function PeoplePage() {
             navigate={navigate}
             BaseIPForThumbnails={BaseIPForThumbnails}
             refreshPeople={fetchPeople}
+            
           />
         ))}
       </div>

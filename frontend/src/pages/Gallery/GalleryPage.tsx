@@ -7,6 +7,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 
 type Photo = { _id: string; url?: string; thumbnail?: string; isFav?: boolean };
 type Group = { date: string; photos: Photo[] };
+type Album = {_id: string, name: string };
 
 export default function GalleryPage() {
   const location = useLocation();
@@ -15,10 +16,16 @@ export default function GalleryPage() {
   const isFavorites = location.pathname.includes("favorites");
   const isAlbums = location.pathname.includes("albums");
   const [groups, setGroups] = useState<Group[]>([]);
+  const [albumList,setAlbumList] = useState<Album[]>([]);
 
+  const getAlbumList = async () =>{
+    const res = await axios.get(`${BaseIP}/albums/idname`);
+    setAlbumList(res.data || []);
+  }
   useEffect(() => {
     const fetch = async () => {
       try {
+        getAlbumList();
         const res = await axios.get(`${BaseIP}/photos/by-date`);
         setGroups(res.data || []);
       } catch (err) {
@@ -58,12 +65,6 @@ export default function GalleryPage() {
           Favorites
         </button>
         <button>Videos</button>
-        <button
-          className={isAlbums ? "active" : ""}
-          onClick={() => navigate("/gallery/albums")}
-        >
-          Albums
-        </button>
 
         <div className="gallery-actions">
           <button>Filters</button>
@@ -100,6 +101,7 @@ export default function GalleryPage() {
                     isFavorite={p.isFav}
                     type="photo"
                     _id={p._id}
+                    albumList = {albumList}
                   />
                 );
               })}

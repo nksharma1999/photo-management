@@ -20,8 +20,8 @@ export default function AppRouter() {
           <Route path="/gallery/favorites" element={<GalleryPage />} />
           <Route path="/people" element={<PeoplePage />} />
           <Route path="/people/:id" element={<PeopleDetails />} />
-          <Route path="/gallery/albums" element={<AlbumsPage />} /> 
-          <Route path="/gallery/albums/:id" element={<AlbumDetails />} />
+          <Route path="/albums" element={<AlbumsPage />} /> 
+          <Route path="/albums/:id" element={<AlbumDetails />} />
           {/* <Route path="/gallery" element={<Gallery />} />
           <Route path="/people" element={<People />} />
           <Route path="/locations" element={<Locations />} />

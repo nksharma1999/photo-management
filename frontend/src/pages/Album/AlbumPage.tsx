@@ -91,7 +91,7 @@ export default function AlbumsPage() {
           <div
             key={a._id}
             className="album-card"
-            onClick={() => navigate(`/gallery/albums/${a._id}`)}
+            onClick={() => navigate(`/albums/${a._id}`)}
           >
             <div className="album-image">
               <img

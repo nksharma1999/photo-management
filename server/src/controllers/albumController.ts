@@ -1,6 +1,16 @@
 import Album from "../model/Album";
 import Photo from "../model/Photo";
 
+export const getAlbumIdAndName = async (req:any,res:any) =>{
+  try{
+    const albums = await Album.find({},"_id name");
+    // console.log(albums);
+    res.json(albums);
+  } catch(err){
+    res.status(500).json(err);
+  }
+}
+
 export const getAlbums = async (req: any, res: any) => {
   try {
     const albums = await Album.find().populate({ path: "photos", select: "thumbnail url" }).lean();
@@ -58,6 +68,9 @@ export const addPhotoToAlbum = async (req: any, res: any) => {
   try {
     const { id } = req.params; // album id
     const { photoId } = req.body;
+    if (!photoId) {
+      return res.status(400).json({ error: "photoId is required" });
+    }
     await Album.findByIdAndUpdate(id, { $addToSet: { photos: photoId } });
     await Photo.findByIdAndUpdate(photoId, { $addToSet: { albums: id } });
     res.json({ message: "Photo added to album" });
