@@ -6,3 +6,12 @@ If you want, next I can give you:
 
 https://www.kaggle.com/datasets/rmamun/kerasfaceneth5
 npm install --ignore-scripts sharp
+
+You can manually download the GPU binary:
+
+From: https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-gpu-windows-x86_64-2.9.1.zip
+
+Extract it into:
+D:\App\face-api\node_modules\@tensorflow\tfjs-node-gpu\deps\lib
+
+Then retry npm install.
