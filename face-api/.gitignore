@@ -5,3 +5,13 @@ node_modules
 /src/generated/prisma
 /server/uploads/*
 /server/thumbnails/*
+/uploads
+*.png
+*.jpg
+*.jpeg
+*.bmp
+*.gif
+*.webp
+*.svg
+*.ico
+*.psd

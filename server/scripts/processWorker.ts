@@ -30,7 +30,7 @@ async function processPhoto(p: any) {
     let filename = p.filename || path.basename(filepath);
 
     let form = new FormData();
-    form.append("image", new Blob([buffer]), filename);
+    form.append("photo", new Blob([buffer]), filename);
 
     let aiRes = await fetch("http://localhost:4001/detect-faces", { method: "POST", body: form });
     if (!aiRes.ok) {
@@ -41,7 +41,7 @@ async function processPhoto(p: any) {
         buffer = await fsPromises.readFile(converted);
         filename = path.basename(converted);
         form = new FormData();
-        form.append("image", new Blob([buffer]), filename);
+        form.append("photo", new Blob([buffer]), filename);
         aiRes = await fetch("http://localhost:4001/detect-faces", { method: "POST", body: form });
       }
     }
@@ -54,16 +54,16 @@ async function processPhoto(p: any) {
     const data: any = await aiRes.json();
     const embeddings = data.embeddings || [];
 
-    const created: any[] = [];
+    // const created: any[] = [];
     for (const emb of embeddings) {
-      if (!Array.isArray(emb)) continue;
+      // if (!Array.isArray(emb)) continue;
       const doc = await FaceEmbedding.create({ photoId: p._id, embedding: emb, processed: false });
-      created.push(doc);
+      // created.push(doc);
     }
 
-    await Photo.findByIdAndUpdate(p._id, { processed: true, facesDetected: created.length });
+    await Photo.findByIdAndUpdate(p._id, { processed: true, facesDetected: embeddings.length });
 
-    return { ok: true, faces: created.length };
+    return { ok: true, faces: embeddings.length };
   } catch (err) {
     console.error("processPhoto error", p._id, err);
     return { ok: false };

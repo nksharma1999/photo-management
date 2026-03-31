@@ -2,7 +2,10 @@ import mongoose from "mongoose";
 
 const personSchema = new mongoose.Schema({
   name: String,
-  representative: [Number],
+  representative: {
+    type: Map, 
+    of: Number
+  },
   photos: [
     {
       type: mongoose.Schema.Types.ObjectId,

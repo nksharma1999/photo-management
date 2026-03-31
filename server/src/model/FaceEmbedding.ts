@@ -8,7 +8,8 @@ const faceSchema = new mongoose.Schema({
   },
   processed: { type: Boolean, default: false },
   embedding: {
-    type: [Number] // array of numbers
+    type: Map, 
+    of: Number
   }
 });
 
