@@ -8,6 +8,30 @@ import path from "path";
 import fetch, { FormData, Blob } from "node-fetch";
 import FaceEmbedding from "../model/FaceEmbedding";
 import { execFileSync } from "child_process";
+import https from "https";
+
+
+async function getCity(lat: number, lon: number) {
+  try {
+    const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&addressdetails=1`;
+    const agent = new https.Agent({ rejectUnauthorized: false });
+    const res = await fetch(url, { method: "GET" , agent });
+    if (!res.ok) {
+      console.error("HTTP error:", res.status);
+      return null;
+    }
+    const data: any = await res.json();
+    const city =
+      data.address.city ||
+      data.address.town ||
+      data.address.village ||
+      data.address.state;
+    return city;
+  } catch (err) {
+    console.error("Fetch error:", err);
+    return null;
+  }
+}
 
 export const uploadPhoto = async (req: any, res: any) => {
   try {
@@ -49,6 +73,7 @@ export const uploadPhoto = async (req: any, res: any) => {
 
     // 2. Extract metadata
     const metadata = await getImageMetadata(filepath);
+    const city = await getCity(metadata?.latitude,metadata?.longitude);
 
     // 3. Save photo in DB and mark as not processed so the AI worker can pick it up later
     const photo = await Photo.create({
@@ -61,6 +86,7 @@ export const uploadPhoto = async (req: any, res: any) => {
       longitude: metadata?.longitude,
       processed: false,
       facesDetected: 0,
+      location: city
     });
 
     // Don't call AI here — background worker should process unprocessed photos.
@@ -74,7 +100,9 @@ export const uploadPhoto = async (req: any, res: any) => {
 
 export const getUnprocessedPhotos = async (req: any, res: any) => {
   try {
-    const photos = await Photo.find({ processed: false }).select("_id url thumbnail filename").sort({ createdAt: 1 });
+    const photos = await Photo.find({ processed: false })
+      .select("_id url thumbnail filename")
+      .sort({ createdAt: 1 });
     res.json(photos);
   } catch (err) {
     res.status(500).json(err);
@@ -82,8 +110,13 @@ export const getUnprocessedPhotos = async (req: any, res: any) => {
 };
 
 export const processAllUnprocessed = async (req: any, res: any) => {
+  res.json({message:"This API is deprecated"});
+  return;
   try {
-    const photos = await Photo.find({ processed: false }).select("_id url filename").sort({ createdAt: 1 }).lean();
+    const photos = await Photo.find({ processed: false })
+      .select("_id url filename")
+      .sort({ createdAt: 1 })
+      .lean();
 
     // start background processing (fire-and-forget)
     (async () => {
@@ -95,7 +128,10 @@ export const processAllUnprocessed = async (req: any, res: any) => {
           const form = new FormData();
           form.append("image", new Blob([buffer]), p.filename || "image.jpg");
 
-          const aiRes = await fetch("http://localhost:4001/detect-faces", { method: "POST", body: form });
+          const aiRes = await fetch("http://localhost:4001/detect-faces", {
+            method: "POST",
+            body: form,
+          });
           if (!aiRes.ok) {
             console.error(`AI service failed for ${p._id}: ${aiRes.status}`);
             continue;
@@ -107,11 +143,18 @@ export const processAllUnprocessed = async (req: any, res: any) => {
           const created: any[] = [];
           for (const emb of embeddings) {
             if (!Array.isArray(emb)) continue;
-            const doc = await FaceEmbedding.create({ photoId: p._id, embedding: emb, processed: false });
+            const doc = await FaceEmbedding.create({
+              photoId: p._id,
+              embedding: emb,
+              processed: false,
+            });
             created.push(doc);
           }
 
-          await Photo.findByIdAndUpdate(p._id, { processed: true, facesDetected: created.length });
+          await Photo.findByIdAndUpdate(p._id, {
+            processed: true,
+            facesDetected: created.length,
+          });
         } catch (err) {
           console.error("Error processing photo", p._id, err);
         }
@@ -166,7 +209,7 @@ export const getPhotosByDate = async (req: any, res: any) => {
         $project: {
           url: 1,
           thumbnail: 1,
-          isFav:1,
+          isFav: 1,
           createdAt: 1,
           dateStr: {
             $dateToString: { format: "%Y-%m-%d", date: "$dateForGroup" },
@@ -178,7 +221,13 @@ export const getPhotosByDate = async (req: any, res: any) => {
         $group: {
           _id: "$dateStr",
           photos: {
-            $push: { _id: "$_id", url: "$url", thumbnail: "$thumbnail", isFav: "$isFav", createdAt: "$createdAt" },
+            $push: {
+              _id: "$_id",
+              url: "$url",
+              thumbnail: "$thumbnail",
+              isFav: "$isFav",
+              createdAt: "$createdAt",
+            },
           },
         },
       },
@@ -219,9 +268,15 @@ export const deletePhoto = async (req: any, res: any) => {
 
       // delete files
       const url = photo.url || "";
-      const filepath = path.join(process.cwd(), url.startsWith("/") ? url.slice(1) : url);
+      const filepath = path.join(
+        process.cwd(),
+        url.startsWith("/") ? url.slice(1) : url,
+      );
       const thumbnail = photo.thumbnail || "";
-      const thumbpath = path.join(process.cwd(), thumbnail.startsWith("/") ? thumbnail.slice(1) : thumbnail);
+      const thumbpath = path.join(
+        process.cwd(),
+        thumbnail.startsWith("/") ? thumbnail.slice(1) : thumbnail,
+      );
       await fsPromises.unlink(filepath).catch(() => {});
       await fsPromises.unlink(thumbpath).catch(() => {});
     }
@@ -231,16 +286,6 @@ export const deletePhoto = async (req: any, res: any) => {
     res.status(500).json(err);
   }
 };
-
-// export const getPhotoCount = async(req:any,res:any)=>{
-
-// //  const [rows]:any = await db.query(
-// //    "SELECT COUNT(*) as total FROM photos"
-// //  )
-
-// //  res.json(rows[0])
-
-// }
 
 export const addToAlbum = async (req: any, res: any) => {
   const { albumId, photoId } = req.body;

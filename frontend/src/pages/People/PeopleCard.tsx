@@ -2,27 +2,29 @@ import { useState } from "react";
 import { FaEdit } from "react-icons/fa";
 import { BaseIP } from "../../data/BaseIP";
 import axios from "axios";
+import type { Person } from "../Dashboard";
 
 type Props = {
-  p: any;
+  person: Person;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   navigate: any;
   BaseIPForThumbnails: string;
   refreshPeople: () => void;
 };
 
 export default function PeopleCard({
-  p,
+  person,
   navigate,
   BaseIPForThumbnails,
   refreshPeople,
 }: Props) {
   const [isEditing, setIsEditing] = useState(false);
-  const [name, setName] = useState(p.name);
+  const [name, setName] = useState(person.name);
 
   const handleRename = async () => {
     if (!name.trim()) return;
 
-    await axios.patch(`${BaseIP}/people/${p._id}`, {
+    await axios.patch(`${BaseIP}/people/${person._id}`, {
       name,
     });
 
@@ -34,12 +36,12 @@ export default function PeopleCard({
     <div
       className="person-card"
       onClick={() => {
-        if (!isEditing) navigate(`/people/${p._id}`);
+        if (!isEditing) navigate(`/people/${person._id}`);
       }}
     >
       <img
-        src={`${BaseIPForThumbnails}${p.photos[0]?.thumbnail}`}
-        alt={p.name}
+        src={`${BaseIPForThumbnails}${person.croppedFaceUrl}`}
+        alt={person.name}
       />
 
       <div className="person-info">
@@ -56,10 +58,10 @@ export default function PeopleCard({
             onBlur={() => setIsEditing(false)}
           />
         ) : (
-          <p>{p.name}</p>
+          <p>{person.name}</p>
         )}
 
-        <span>{p.photos.length} photos</span>
+        <span>{person.photos} photos</span>
 
         {/* EDIT ICON */}
         {!isEditing && (

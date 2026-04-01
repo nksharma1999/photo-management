@@ -15,8 +15,8 @@ type StatShape = {
   albums: number;
 };
 
-type Person = { _id: string; name: string; photos: number; avatar: string };
-type Location = { name: string; lat: number; lng: number; photos: number };
+export type Person = { _id: string; name: string; photos: number; croppedFaceUrl: string };
+export type Location = { name: string; lat: number; lng: number; photos: number };
 
 export default function Dashboard() {
   const [stats, setStats] = useState<StatShape | null>(null);
@@ -77,7 +77,7 @@ export default function Dashboard() {
 
       <div className="bottom-section">
         <PeopleSection people={people} loading={loading}/>
-        <MapSection  />
+        <MapSection locations={locations}/>
       </div>
 
       <PhotoGrid />

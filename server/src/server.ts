@@ -14,6 +14,7 @@ app.use(express.json())
 app.get("/api/test", (req,res) =>{
     res.status(200).json("Ok");
 })
+app.use("/Faces", express.static("Faces"))
 app.use("/uploads", express.static("uploads"))
 app.use("/thumbnails", express.static("thumbnails"))
 

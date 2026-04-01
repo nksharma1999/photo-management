@@ -84,7 +84,7 @@ function findBestMatch(queryDescriptor, knownFacesParam, threshold = 0.5) {
         bestId = person.id || person._id || undefined;
       }
 
-      console.log(`Compared with ${person.name || "unknown"}, distance: ${distance}`);
+      // console.log(`Compared with ${person.name || "unknown"}, distance: ${distance}`);
 
     } catch (e) {
       console.warn('euclideanDistance error, skipping person:', e && e.message);
@@ -93,34 +93,6 @@ function findBestMatch(queryDescriptor, knownFacesParam, threshold = 0.5) {
   }
   if (bestMatch.distance < threshold) return { personId: bestId, name: bestMatch.name, distance: bestMatch.distance };
   return { name: "Not Found", distance: bestMatch.distance };
-}
-
-function addToKnownFaces(
-  newDescriptor,
-  name = `Person${knownFaces.length + 1}`,
-  threshold = 0.6,
-) {
-  let isKnown = false;
-
-  for (const person of knownFaces) {
-    const distance = faceapi.euclideanDistance(
-      newDescriptor,
-      person.descriptor,
-    );
-    if (distance < threshold) {
-      isKnown = true;
-      break;
-    }
-  }
-
-  if (!isKnown) {
-    knownFaces.push({ name, descriptor: newDescriptor });
-    console.log(
-      `New face added: ${name}. Total known faces: ${knownFaces.length}`,
-    );
-  } else {
-    console.log("Face already known, not added.");
-  }
 }
 
 // Endpoint: detect faces and return cropped images + embeddings
@@ -153,16 +125,22 @@ app.post("/detect-faces", upload.single("photo"), async (req, res) => {
       const faceCtx = faceCanvas.getContext("2d");
       faceCtx.drawImage(img, x, y, width, height, 0, 0, width, height);
 
+      // Ensure the folder exists first
+      const facesDir = path.join(__dirname, '../server/Faces');
+      if (!fs.existsSync(facesDir)) {
+        fs.mkdirSync(facesDir, { recursive: true });
+      }
+      // Generate a timestamp
+      const timestamp = Date.now();
       // Save cropped face temporarily
-      const outPath = path.join(__dirname, `face${i + 1}.png`);
+      const outPath = path.join(facesDir, `face_${timestamp}.png`);
       fs.writeFileSync(outPath, faceCanvas.toBuffer("image/png"));
 
-      // Add to knownFaces if new
-      //   addToKnownFaces(det.descriptor);
-
-      results.push(det.descriptor);
+      const relativePath = path.join('/Faces', `face_${timestamp}.png`);
+      results.push({faceUrl:relativePath,descriptor:det.descriptor});
     //   console.log(det.descriptor);
     });
+    // console.log(results);
     res.json({
         facesDetected: detections.length,
         embeddings: results,

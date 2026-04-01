@@ -6,6 +6,7 @@ const faceSchema = new mongoose.Schema({
     ref: "Photo",
     required: true
   },
+  croppedFaceUrl: String,
   processed: { type: Boolean, default: false },
   embedding: {
     type: Map, 

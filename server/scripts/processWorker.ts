@@ -6,6 +6,11 @@ import path from "path";
 import { execFile } from "child_process";
 import { promisify } from "util";
 import fetch, { FormData, Blob } from "node-fetch";
+import { clusterFaces } from "../src/services/faceClusterService";
+
+connectDB();
+
+let isImageProccessing = false;
 
 const execFileP = promisify(execFile);
 
@@ -32,7 +37,10 @@ async function processPhoto(p: any) {
     let form = new FormData();
     form.append("photo", new Blob([buffer]), filename);
 
-    let aiRes = await fetch("http://localhost:4001/detect-faces", { method: "POST", body: form });
+    let aiRes = await fetch("http://localhost:4001/detect-faces", {
+      method: "POST",
+      body: form,
+    });
     if (!aiRes.ok) {
       // try conversion for HEIC
       const ext = path.extname(filepath).toLowerCase();
@@ -42,7 +50,10 @@ async function processPhoto(p: any) {
         filename = path.basename(converted);
         form = new FormData();
         form.append("photo", new Blob([buffer]), filename);
-        aiRes = await fetch("http://localhost:4001/detect-faces", { method: "POST", body: form });
+        aiRes = await fetch("http://localhost:4001/detect-faces", {
+          method: "POST",
+          body: form,
+        });
       }
     }
 
@@ -57,11 +68,19 @@ async function processPhoto(p: any) {
     // const created: any[] = [];
     for (const emb of embeddings) {
       // if (!Array.isArray(emb)) continue;
-      const doc = await FaceEmbedding.create({ photoId: p._id, embedding: emb, processed: false });
+      const doc = await FaceEmbedding.create({
+        photoId: p._id,
+        croppedFaceUrl: emb.faceUrl,
+        embedding: emb.descriptor,
+        processed: false,
+      });
       // created.push(doc);
     }
 
-    await Photo.findByIdAndUpdate(p._id, { processed: true, facesDetected: embeddings.length });
+    await Photo.findByIdAndUpdate(p._id, {
+      processed: true,
+      facesDetected: embeddings.length,
+    });
 
     return { ok: true, faces: embeddings.length };
   } catch (err) {
@@ -71,10 +90,12 @@ async function processPhoto(p: any) {
 }
 
 async function run(concurrency = 3) {
-  await connectDB();
-  console.log("Worker connected to DB");
-
-  const photos = await Photo.find({ processed: false }).select("_id url filename").limit(100).lean();
+  console.log("Proccessing image...");
+  isImageProccessing = true;
+  const photos = await Photo.find({ processed: false })
+    .select("_id url filename")
+    .limit(100)
+    .lean();
   console.log(`Found ${photos.length} unprocessed photos`);
 
   let index = 0;
@@ -102,14 +123,24 @@ async function run(concurrency = 3) {
 
     if (photos.length === 0) resolve();
     else next();
-  }).then(() => {
-    console.log("Processing complete", results);
-    process.exit(0);
+  }).then(async () => {
+    console.log("Image Processing completed", results);
+    if(results.length>0){
+      await clusterFaces();
+      console.log("Face Cluster Created!");
+    }
+    isImageProccessing = false;
+    // process.exit(0);
   });
 }
 
 const concurrency = parseInt(process.argv[2] || "3", 10);
-run(concurrency).catch((e) => {
-  console.error(e);
-  process.exit(1);
-});
+
+setInterval(() => {
+  if (!isImageProccessing) {
+    run(concurrency).catch((e) => {
+      console.error(e);
+      process.exit(1);
+    });
+  }
+}, 4000);

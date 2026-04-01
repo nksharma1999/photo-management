@@ -1,20 +1,13 @@
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "./MapSection.css";
+import type { Location } from "../../pages/Dashboard";
 
-type Location = {
-  name: string;
-  lat: number;
-  lng: number;
-  photos: number;
-};
 
-const locations: Location[] = [
-  { name: "Mumbai", lat: 19.076, lng: 72.8777, photos: 230 },
-  { name: "Goa", lat: 15.2993, lng: 74.124, photos: 80 },
-  { name: "Delhi", lat: 28.7041, lng: 77.1025, photos: 50 }
-];
+type props ={
+  locations:Location[]
+}
 
-export default function MapSection() {
+export default function MapSection({locations}:props) {
   return (
     <div className="map-section">
       <h3>Photo Locations</h3>

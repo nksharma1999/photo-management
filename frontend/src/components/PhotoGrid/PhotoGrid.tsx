@@ -26,9 +26,9 @@ export default function PhotoGrid() {
     600: 1,
   };
 
-  const items: string[] = photos.length
-    ? photos
-    : Array.from({ length: 8 }).map((_, i) => `https://picsum.photos/seed/${i}/400/600`);
+  // const items: string[] = photos.length
+  //   ? photos
+  //   : Array.from({ length: 8 }).map((_, i) => `https://picsum.photos/seed/${i}/400/600`);
 
   return (
     <div className="photo-section">
@@ -39,7 +39,7 @@ export default function PhotoGrid() {
         className="photo-masonry"
         columnClassName="photo-column"
       >
-        {items.map((p, i) => (
+        {photos.map((p, i) => (
           <div className="photo-card" key={String(i)}>
             <img src={BaseIPForThumbnails + p} alt="photo" />
           </div>

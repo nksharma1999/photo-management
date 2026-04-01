@@ -3,9 +3,12 @@ import Photo from "../model/Photo";
 
 export const getPeople = async (req: any, res: any) => {
 
-  const people = await Person.find().populate("photos");
-
-  res.json(people);
+  const peopleAgg: any = await Person.aggregate([
+        { $project: { name: 1, croppedFaceUrl: 1, photos: { $size: { $ifNull: ["$photos", []] } } } },
+        { $sort: { photos: -1 } }
+      ]);
+      
+  res.json(peopleAgg);
 
 };
 

@@ -41,7 +41,7 @@ export const clusterFaces = async () => {
 
   persons.forEach((p) => {
     if (p.representative) {
-      knownFaces.push({ id: String(p._id), name: p.name, descriptor:p.representative });
+      knownFaces.push({ id: String(p._id), name: p.name, croppedFaceUrl:p.croppedFaceUrl, descriptor:p.representative });
     }
   });
 
@@ -49,7 +49,7 @@ export const clusterFaces = async () => {
     if (!embDoc.photoId) continue;
 
     const match = await findBestMatch(embDoc.embedding, knownFaces, 0.5);
-    console.log(match);
+    // console.log(match);
     if (match == null) {
       // no match found
       continue;
@@ -67,6 +67,7 @@ export const clusterFaces = async () => {
       // create new person
       const newPerson = await Person.create({
         name: "Unknown",
+        croppedFaceUrl: embDoc.croppedFaceUrl,
         representative: embDoc.embedding,
         photos: [embDoc.photoId],
       });
@@ -76,6 +77,7 @@ export const clusterFaces = async () => {
       knownFaces.push({
         id: String(newPerson._id),
         name: newPerson.name,
+        croppedFaceUrl: newPerson.croppedFaceUrl,
         descriptor: newDesc,
       });
       await Photo.findByIdAndUpdate(embDoc.photoId, {

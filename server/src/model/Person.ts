@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 
 const personSchema = new mongoose.Schema({
   name: String,
+  croppedFaceUrl: String,
   representative: {
     type: Map, 
     of: Number

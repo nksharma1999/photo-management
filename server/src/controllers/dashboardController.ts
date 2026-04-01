@@ -21,21 +21,23 @@ export const getTopPeople = async (req: any, res: any) => {
     const limit = parseInt(req.query.limit) || 6;
 
     const peopleAgg: any = await Person.aggregate([
-      { $project: { name: 1, photosCount: { $size: { $ifNull: ["$photos", []] } } } },
-      { $sort: { photosCount: -1 } },
+      { $project: { name: 1, croppedFaceUrl: 1, photos: { $size: { $ifNull: ["$photos", []] } } } },
+      { $sort: { photos: -1 } },
       { $limit: limit }
     ]);
+    
+    // console.log(peopleAgg);
 
-    // populate first photo thumbnail for avatar when available
-    const results = await Promise.all(
-      peopleAgg.map(async (p: any) => {
-        const person = (await Person.findById(p._id).populate({ path: "photos", options: { limit: 1 }, select: "thumbnail" })) as any;
-        const avatar = person?.photos?.length ? person.photos[0].thumbnail : `https://i.pravatar.cc/100?u=${p._id}`;
-        return { _id: p._id, name: p.name, photos: p.photosCount, avatar };
-      })
-    );
+    // // populate first photo thumbnail for avatar when available
+    // const results = await Promise.all(
+    //   peopleAgg.map(async (p: any) => {
+    //     const person = (await Person.findById(p._id).populate({ path: "photos", options: { limit: 1 }, select: "thumbnail" })) as any;
+    //     const avatar = person?.photos?.length ? person.photos[0].thumbnail : `https://i.pravatar.cc/100?u=${p._id}`;
+    //     return { _id: p._id, name: p.name, photos: p.photosCount, avatar };
+    //   })
+    // );
 
-    res.json(results);
+    res.json(peopleAgg);
   } catch (err) {
     res.status(500).json(err);
   }
