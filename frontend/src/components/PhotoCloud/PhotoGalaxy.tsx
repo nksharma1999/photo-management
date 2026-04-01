@@ -2,20 +2,21 @@ import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { PhotoNode } from "./PhotoNode";
-import { photos } from "../../data/photos";
 import {
   generateClusters,
   type ClusterMode,
 } from "../../utils/generateClusters";
-// import ClusterLabel from "./ClusterLabel";
+import type { Photo } from "../../data/photos";
+import { BaseIPForThumbnails } from "../../data/BaseIP";
 
 type Props = {
   mode: ClusterMode;
+  photos: Photo[];
   onSelect: (img: string, pos: [number, number, number]) => void;
   search: string;
 };
 
-export default function PhotoGalaxy({ mode, onSelect, search }: Props) {
+export default function PhotoGalaxy({ mode, photos, onSelect, search }: Props) {
   const groupRef = useRef<THREE.Group>(null!);
   const clustered = generateClusters(photos, mode);
 
@@ -36,7 +37,8 @@ export default function PhotoGalaxy({ mode, onSelect, search }: Props) {
       {filtered.map((photo) => (
         <PhotoNode
           key={photo.id}
-          texture={photo.src}
+          imageUrl={BaseIPForThumbnails + photo.url+".jpg"}
+          texture={BaseIPForThumbnails+photo.thumbnail}
           position={photo.position}
           onClick={onSelect}
           highlight={photo.highlight}

@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import axios from "axios";
 import { BaseIP, BaseIPForThumbnails } from "../../data/BaseIP";
 import PhotoCard from "../Gallery/PhotoCard";
+import { addBaseUrlForOriginalImg } from "../../utils/fixHeicUrl";
 
 export default function AlbumDetails() {
   const { id } = useParams();
@@ -28,6 +29,7 @@ export default function AlbumDetails() {
             isFavorite={p.isFav}
             key={p._id}
             src={BaseIPForThumbnails + p.thumbnail}
+            url={addBaseUrlForOriginalImg(p.url)}
             type={""}
             disableAddToAlbum={true}
             albumIdToDelete={album._id}

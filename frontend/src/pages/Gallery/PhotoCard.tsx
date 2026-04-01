@@ -7,10 +7,12 @@ import { RxDotsVertical } from "react-icons/rx";
 import { MdDelete } from "react-icons/md";
 import { IoShareSocialOutline } from "react-icons/io5";
 import { IoIosAdd, IoMdAlbums } from "react-icons/io";
+import PreviewModal from "../../components/PhotoCloud/PreviewModal";
 type Album = { _id: string; name: string };
 type Props = {
   _id: string;
   src: string;
+  url: string; // full size image url, used in preview modal
   type: string;
   isFavorite?: boolean;
   albumList?: Album[];
@@ -22,13 +24,15 @@ type Props = {
 export default function PhotoCard({
   _id,
   src,
+  url,
   type,
   isFavorite,
   albumList,
   deletePermanently,
   disableAddToAlbum,
-  albumIdToDelete
+  albumIdToDelete,
 }: Props) {
+  const [selected, setSelected] = useState<string | null>(null);
   const [liked, setLiked] = useState(isFavorite);
   const [showOptions, setShowOptions] = useState(false);
   const [showAlbumOptions, setShowAlbumOptions] = useState(false);
@@ -81,7 +85,9 @@ export default function PhotoCard({
         const res = await axios.delete(`${BaseIP}/photos/${_id}`);
         alert(res.data.message);
       } else {
-        const res = await axios.delete(`${BaseIP}/albums/${albumIdToDelete}/photos/${_id}`);
+        const res = await axios.delete(
+          `${BaseIP}/albums/${albumIdToDelete}/photos/${_id}`,
+        );
         alert(res.data.message);
       }
     } catch (err) {
@@ -91,65 +97,78 @@ export default function PhotoCard({
       setShowOptions(false);
     }
   };
+
+  const handleImageClick = () => {
+    setSelected(url); // open preview modal with full size image if available, otherwise use the thumbnail 
+  };
   return (
-    <div className="gallery-photo-card">
-      {showOptions && (
-        <div className="options-menu">
-          <button className="option-item" onClick={handleDeletePhoto}>
-            <MdDelete />
-          </button>
-          <button className="option-item">
-            <IoShareSocialOutline />
-          </button>
-          <button className="option-item" onClick={toggleAlbumOptions} disabled={disableAddToAlbum}>
-            <IoIosAdd />
-            <IoMdAlbums />
-          </button>
-          {showAlbumOptions && (
-            <div
-              className="album-menu"
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                flexWrap: "wrap",
-                marginTop: "6px",
-                background: "#f9f9f9",
-                border: "1px solid #ddd",
-                borderRadius: "4px",
-                padding: "6px",
-              }}
+    <>
+      <div className="gallery-photo-card">
+        {showOptions && (
+          <div className="options-menu">
+            <button className="option-item" onClick={handleDeletePhoto}>
+              <MdDelete />
+            </button>
+            <button className="option-item">
+              <IoShareSocialOutline />
+            </button>
+            <button
+              className="option-item"
+              onClick={toggleAlbumOptions}
+              disabled={disableAddToAlbum}
             >
-              {albumList?.map((album: Album) => {
-                return (
-                  <button
-                    className="album-item"
-                    onClick={() => AddPhotoInAlbum(album._id)}
-                  >
-                    {album.name}
-                  </button>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      )}
-      <img src={src} />
-
-      {/* Heart button */}
-      <button className="gallery-favorite-btn" onClick={toggleLike}>
-        {liked ? (
-          <FaHeart size={18} color="#ff4d6d" />
-        ) : (
-          <FiHeart size={18} color="teal" />
+              <IoIosAdd />
+              <IoMdAlbums />
+            </button>
+            {showAlbumOptions && (
+              <div
+                className="album-menu"
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  flexWrap: "wrap",
+                  marginTop: "6px",
+                  background: "#f9f9f9",
+                  border: "1px solid #ddd",
+                  borderRadius: "4px",
+                  padding: "6px",
+                }}
+              >
+                {albumList?.map((album: Album) => {
+                  return (
+                    <button
+                      className="album-item"
+                      onClick={() => AddPhotoInAlbum(album._id)}
+                    >
+                      {album.name}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         )}
-      </button>
-      <button className="gallery-option-btn" onClick={toggleOptions}>
-        <RxDotsVertical size={18} color="teal" />
-      </button>
+        <img src={src} onClick={handleImageClick} />
 
-      {type === "video" && <div className="gallery-video-badge">0:45</div>}
+        {/* Heart button */}
+        <button className="gallery-favorite-btn" onClick={toggleLike}>
+          {liked ? (
+            <FaHeart size={18} color="#ff4d6d" />
+          ) : (
+            <FiHeart size={18} color="teal" />
+          )}
+        </button>
+        <button className="gallery-option-btn" onClick={toggleOptions}>
+          <RxDotsVertical size={18} color="teal" />
+        </button>
 
-      <div className="gallery-photo-overlay">RAW</div>
-    </div>
+        {type === "video" && <div className="gallery-video-badge">0:45</div>}
+
+        <div className="gallery-photo-overlay">RAW</div>
+      </div>
+      {selected && (
+        <PreviewModal image={selected} onClose={() => setSelected(null)} />
+      )}
+    </>
   );
 }

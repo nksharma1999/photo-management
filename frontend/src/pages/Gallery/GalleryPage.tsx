@@ -4,8 +4,9 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { BaseIP, BaseIPForThumbnails } from "../../data/BaseIP";
 import { useLocation, useNavigate } from "react-router-dom";
+import { addBaseUrlForOriginalImg } from "../../utils/fixHeicUrl";
 
-type Photo = { _id: string; url?: string; thumbnail?: string; isFav?: boolean };
+type Photo = { _id: string; url: string; thumbnail?: string; isFav?: boolean };
 type Group = { date: string; photos: Photo[] };
 type Album = {_id: string, name: string };
 
@@ -92,13 +93,14 @@ export default function GalleryPage() {
                   ? p.thumbnail.startsWith("/")
                     ? `${BaseIPForThumbnails}${p.thumbnail}`
                     : p.thumbnail
-                  : p.url || "";
+                  : p.url+".jpg" || "";
 
                 return (
                   <PhotoCard
                     deletePermanently={true}
                     key={p._id}
                     src={src}
+                    url={addBaseUrlForOriginalImg(p.url)}
                     isFavorite={p.isFav}
                     type="photo"
                     _id={p._id}

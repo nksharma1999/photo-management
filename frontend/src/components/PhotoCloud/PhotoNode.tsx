@@ -5,12 +5,13 @@ import { TextureLoader } from "three";
 import * as THREE from "three";
 type Props = {
   texture: string;
+  imageUrl: string;
   position: [number, number, number];
   onClick: (src: string, pos: [number, number, number]) => void;
   highlight: boolean;
 };
 
-export const PhotoNode = ({ texture, position, onClick, highlight }: Props) => {
+export const PhotoNode = ({ texture,imageUrl, position, onClick, highlight }: Props) => {
   const tex = useLoader(TextureLoader, texture);
   //   tex.colorSpace = THREE.SRGBColorSpace;
 
@@ -28,7 +29,7 @@ export const PhotoNode = ({ texture, position, onClick, highlight }: Props) => {
       <a.mesh
         onPointerOver={() => setHovered(true)}
         onPointerOut={() => setHovered(false)}
-        onClick={() => onClick(texture, position)}
+        onClick={() => onClick(imageUrl, position)}
       >
         <planeGeometry args={[2, 1.5]} />
         <meshBasicMaterial

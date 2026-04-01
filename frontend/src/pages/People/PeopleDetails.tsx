@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { BaseIP, BaseIPForThumbnails } from "../../data/BaseIP";
 import PhotoCard from "../Gallery/PhotoCard";
 import axios from "axios";
+import { addBaseUrlForOriginalImg } from "../../utils/fixHeicUrl";
 type Album = { _id: string; name: string };
 type PersonInfo = {
   _id: string;
@@ -47,6 +48,7 @@ export default function PersonDetails() {
             isFavorite={p.isFav}
             key={p._id}
             src={BaseIPForThumbnails + p.thumbnail}
+            url={addBaseUrlForOriginalImg(p.url)}
             type={""}
             albumList={albumList}
           />

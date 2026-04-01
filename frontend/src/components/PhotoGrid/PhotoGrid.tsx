@@ -26,10 +26,6 @@ export default function PhotoGrid() {
     600: 1,
   };
 
-  // const items: string[] = photos.length
-  //   ? photos
-  //   : Array.from({ length: 8 }).map((_, i) => `https://picsum.photos/seed/${i}/400/600`);
-
   return (
     <div className="photo-section">
       <h3>Recent Photos</h3>

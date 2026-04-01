@@ -26,17 +26,6 @@ export const getTopPeople = async (req: any, res: any) => {
       { $limit: limit }
     ]);
     
-    // console.log(peopleAgg);
-
-    // // populate first photo thumbnail for avatar when available
-    // const results = await Promise.all(
-    //   peopleAgg.map(async (p: any) => {
-    //     const person = (await Person.findById(p._id).populate({ path: "photos", options: { limit: 1 }, select: "thumbnail" })) as any;
-    //     const avatar = person?.photos?.length ? person.photos[0].thumbnail : `https://i.pravatar.cc/100?u=${p._id}`;
-    //     return { _id: p._id, name: p.name, photos: p.photosCount, avatar };
-    //   })
-    // );
-
     res.json(peopleAgg);
   } catch (err) {
     res.status(500).json(err);
@@ -57,6 +46,29 @@ export const getLocations = async (req: any, res: any) => {
     const mapped = locs.map((l: any) => ({ name: l._id, lat: l.lat || 0, lng: l.lng || 0, photos: l.photos }));
 
     res.json(mapped);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+};
+
+export const getDataFor3DMap = async (req: any, res: any) => {
+  try {
+    // return list of photos with location and minimal metadata for 3D map
+    const photos: any = await Photo.find({ location: { $ne: null } })
+      .populate("people", "name")
+      .sort({ createdAt: -1 })
+      .limit(200)
+      .lean();
+
+    const out = photos.map((p: any) => ({
+      id: String(p._id),
+      url: p.url,
+      thumbnail: p.thumbnail || p.url,
+      person: (p.people && p.people.length && p.people[0].name) ? p.people[0].name : "Unknown",
+      location: p.location || "",
+      date: p.dateTaken ? new Date(p.dateTaken).toISOString().slice(0,10) : new Date(p.createdAt).toISOString().slice(0,10)
+    }));
+    res.json(out);
   } catch (err) {
     res.status(500).json(err);
   }

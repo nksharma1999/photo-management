@@ -2,10 +2,13 @@ import { Canvas, useThree } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import "./PhotoCloud.css";
 import PhotoGalaxy from "./PhotoGalaxy";
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import PreviewModal from "./PreviewModal";
 import * as THREE from "three";
 import type { ClusterMode } from "../../utils/generateClusters";
+import { type Photo } from "../../data/photos";
+import axios from "axios";
+import { BaseIP } from "../../data/BaseIP";
 
 type CameraControllerProps = {
   target: [number, number, number] | null;
@@ -25,15 +28,31 @@ function CameraController({ target }: CameraControllerProps) {
 }
 
 export default function PhotoCloud() {
+  const [photos, setPhotos] = useState<Photo[]>([]);
   const [search, setSearch] = useState("");
   const [mode, setMode] = useState<ClusterMode>("person");
   const [selected, setSelected] = useState<string | null>(null);
   const [target, setTarget] = useState<[number, number, number] | null>(null);
 
   const handleClick = (img: string, pos: [number, number, number]) => {
+    console.log("Selected image:", img);
     setSelected(img);
     setTarget(pos);
   };
+
+  useEffect(() => {
+    const fetchPhotos = async () => {
+      try {
+        const res = await axios.get(`${BaseIP}/dashboard/map-data`);
+        setPhotos(res.data);
+      } catch (err) {
+        console.error("Failed to fetch photos", err);
+      }
+    };
+
+    fetchPhotos();
+  }, []);
+
   return (
     <div className="photo-cloud">
       <div className="photo-cloud-header">
@@ -74,7 +93,7 @@ export default function PhotoCloud() {
         <OrbitControls />
 
         <Suspense fallback={null}>
-          <PhotoGalaxy mode={mode} onSelect={handleClick} search={search} />
+          <PhotoGalaxy mode={mode} photos={photos} onSelect={handleClick} search={search} />
         </Suspense>
         <CameraController target={target} />
       </Canvas>
