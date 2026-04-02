@@ -8,7 +8,7 @@ import peopleRoutes from "./routes/peopleRoutes";
 import dashboardRoutes from "./routes/dashboardRoutes";
 import albumRoutes from "./routes/albumRoutes";
 
-dotenv.config({path:"../config/.env"});
+dotenv.config({path:"./config/.env"});
 const PORT = process.env.SERVER_PORT
 const MONGODB_URL = process.env.MONGODB_URL;
 

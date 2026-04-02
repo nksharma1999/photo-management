@@ -3,5 +3,8 @@
 .env
 
 /src/generated/prisma
-/server/uploads/*
-/server/thumbnails/*
+/uploads/*
+/thumbnails/*
+/Faces/*
+ecosystem.config.js
+node_modules

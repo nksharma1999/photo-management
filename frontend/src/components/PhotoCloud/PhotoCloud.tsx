@@ -35,7 +35,6 @@ export default function PhotoCloud() {
   const [target, setTarget] = useState<[number, number, number] | null>(null);
 
   const handleClick = (img: string, pos: [number, number, number]) => {
-    console.log("Selected image:", img);
     setSelected(img);
     setTarget(pos);
   };

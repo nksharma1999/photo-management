@@ -4,10 +4,11 @@ const path = require("path");
 const fs = require("fs");
 const canvas = require("canvas");
 const faceapi = require("face-api.js");
-require('dotenv').config({ path: '../config/.env' });
+require('dotenv').config({ path: './config/.env' });
 const { Canvas, Image, ImageData } = canvas;
 faceapi.env.monkeyPatch({ Canvas, Image, ImageData });
-const PORT = process.env.FACE_API_SERVER_PORT || 4401;
+const PORT = process.env.FACE_API_SERVER_PORT;
+console.log(process.env.FACE_API_SERVER_PORT);
 const app = express();
 app.use(express.json());
 
@@ -126,7 +127,7 @@ app.post("/detect-faces", upload.single("photo"), async (req, res) => {
       faceCtx.drawImage(img, x, y, width, height, 0, 0, width, height);
 
       // Ensure the folder exists first
-      const facesDir = path.join(__dirname, '../server/Faces');
+      const facesDir = path.join(__dirname, '../Faces');
       if (!fs.existsSync(facesDir)) {
         fs.mkdirSync(facesDir, { recursive: true });
       }

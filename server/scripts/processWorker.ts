@@ -8,7 +8,7 @@ import { promisify } from "util";
 import fetch, { FormData, Blob } from "node-fetch";
 import { clusterFaces } from "../src/services/faceClusterService";
 import dotenv from 'dotenv';
-dotenv.config({path:'../config/.env'});
+dotenv.config({path:'./config/.env'});
 const FACE_API_BASE_URL = process.env.FACE_API_URL;
 const MONGODB_URL = process.env.MONGODB_URL;
 connectDB(MONGODB_URL);

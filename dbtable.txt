@@ -15,3 +15,5 @@ Extract it into:
 D:\App\face-api\node_modules\@tensorflow\tfjs-node-gpu\deps\lib
 
 Then retry npm install.
+
+npx ts-node .\scripts\processWorker.ts
