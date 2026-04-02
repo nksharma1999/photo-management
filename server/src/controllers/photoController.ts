@@ -17,7 +17,7 @@ async function getCity(lat: number, lon: number) {
     const agent = new https.Agent({ rejectUnauthorized: false });
     const res = await fetch(url, { method: "GET" , agent });
     if (!res.ok) {
-      console.error("HTTP error:", res.status);
+      console.error("HTTP error city name not found:", res.status);
       return null;
     }
     const data: any = await res.json();
@@ -42,6 +42,7 @@ export const uploadPhoto = async (req: any, res: any) => {
     }
 
     const filepath = file.path;
+    let needFileDelete = false;
     // 1. Generate thumbnail (try sharp; if HEIC fails, try external converter)
     const thumbPath = `thumbnails/${file.filename}`;
     let thumbCreated = false;
@@ -49,7 +50,7 @@ export const uploadPhoto = async (req: any, res: any) => {
       await sharp(filepath).resize(300).toFile(thumbPath);
       thumbCreated = true;
     } catch (err: any) {
-      console.warn("sharp thumbnail creation failed:", err.message || err);
+      // console.warn("sharp thumbnail creation failed:", err.message || err);
       const ext = path.extname(filepath).toLowerCase();
       if (ext === ".heic" || ext === ".heif") {
         try {
@@ -64,7 +65,8 @@ export const uploadPhoto = async (req: any, res: any) => {
 
           await sharp(converted).resize(300).toFile(thumbPath);
           thumbCreated = true;
-          await fsPromises.unlink(converted).catch(() => {});
+          needFileDelete = true;
+          
         } catch (e2: any) {
           console.error("HEIC conversion failed:", e2.message || e2);
         }
@@ -92,6 +94,8 @@ export const uploadPhoto = async (req: any, res: any) => {
     // Don't call AI here — background worker should process unprocessed photos.
     // Return immediately so uploads are fast.
     res.json({ message: "Photo uploaded", photo, processingQueued: true });
+    if (needFileDelete)
+      await fsPromises.unlink(filepath).catch(() => {});
   } catch (err) {
     console.error(err);
     res.status(500).json(err);

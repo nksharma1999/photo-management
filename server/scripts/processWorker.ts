@@ -7,8 +7,8 @@ import { execFile } from "child_process";
 import { promisify } from "util";
 import fetch, { FormData, Blob } from "node-fetch";
 import { clusterFaces } from "../src/services/faceClusterService";
-import dotenv from 'dotenv';
-dotenv.config({path:'./config/.env'});
+import dotenv from "dotenv";
+dotenv.config({ path: "./config/.env" });
 const FACE_API_BASE_URL = process.env.FACE_API_URL;
 const MONGODB_URL = process.env.MONGODB_URL;
 connectDB(MONGODB_URL);
@@ -32,52 +32,58 @@ async function convertHeicToJpeg(src: string) {
 async function processPhoto(p: any) {
   const rel = p.url && p.url.startsWith("/") ? p.url.slice(1) : p.url;
   const filepath = path.join(process.cwd(), rel || "");
+  const ext = path.extname(filepath).toLowerCase();
+  let aiRes = null;
 
-  try {
-    let buffer = await fsPromises.readFile(filepath);
-    let filename = p.filename || path.basename(filepath);
+  if (ext === ".heic" || ext === ".heif") {
+    try {
+      const updatedFilepath = filepath + ".jpg";
+      const updatedFilename = p.filename + ".jpg";
+      let buffer = await fsPromises.readFile(updatedFilepath);
+      let form = new FormData();
+      form.append("photo", new Blob([buffer]), updatedFilename);
 
-    let form = new FormData();
-    form.append("photo", new Blob([buffer]), filename);
-
-    let aiRes = await fetch(`${FACE_API_BASE_URL}/detect-faces`, {
-      method: "POST",
-      body: form,
-    });
-    if (!aiRes.ok) {
-      // try conversion for HEIC
-      const ext = path.extname(filepath).toLowerCase();
-      if (ext === ".heic" || ext === ".heif") {
-        const converted = await convertHeicToJpeg(filepath);
-        buffer = await fsPromises.readFile(converted);
-        filename = path.basename(converted);
-        form = new FormData();
-        form.append("photo", new Blob([buffer]), filename);
-        aiRes = await fetch(`${FACE_API_BASE_URL}/detect-faces`, {
-          method: "POST",
-          body: form,
-        });
-      }
-    }
-
-    if (!aiRes.ok) {
-      console.error(`AI service failed for ${p._id}: ${aiRes.status}`);
+      aiRes = await fetch(`${FACE_API_BASE_URL}/detect-faces`, {
+        method: "POST",
+        body: form,
+      });
+    } catch (e) {
+      console.error("HEIC.jpg failed for", p._id, e);
       return { ok: false };
     }
+  } else {
+    try {
+      let buffer = await fsPromises.readFile(filepath);
+      let filename = p.filename || path.basename(filepath);
+      let form = new FormData();
+      form.append("photo", new Blob([buffer]), filename);
 
+      aiRes = await fetch(`${FACE_API_BASE_URL}/detect-faces`, {
+        method: "POST",
+        body: form,
+      });
+    } catch (e) {
+      console.error("processPhoto error", p._id, e);
+      return { ok: false };
+    }
+  }
+
+  if (aiRes === null || !aiRes.ok) {
+    console.error(`AI service failed for ${p._id}: ${aiRes?.status}`);
+    return { ok: false };
+  }
+
+  try {
     const data: any = await aiRes.json();
     const embeddings = data.embeddings || [];
 
-    // const created: any[] = [];
     for (const emb of embeddings) {
-      // if (!Array.isArray(emb)) continue;
       const doc = await FaceEmbedding.create({
         photoId: p._id,
         croppedFaceUrl: emb.faceUrl,
         embedding: emb.descriptor,
         processed: false,
       });
-      // created.push(doc);
     }
 
     await Photo.findByIdAndUpdate(p._id, {
@@ -86,20 +92,20 @@ async function processPhoto(p: any) {
     });
 
     return { ok: true, faces: embeddings.length };
-  } catch (err) {
-    console.error("processPhoto error", p._id, err);
+  } catch (e) {
+    console.error("Error saving embeddings for", p._id, e);
     return { ok: false };
   }
 }
 
 async function run(concurrency = 3) {
-  console.log("Proccessing image...");
+  // console.log("Proccessing image...");
   isImageProccessing = true;
   const photos = await Photo.find({ processed: false })
     .select("_id url filename")
     .limit(100)
     .lean();
-  console.log(`Found ${photos.length} unprocessed photos`);
+  // console.log(`Found ${photos.length} unprocessed photos`);
 
   let index = 0;
   let inFlight = 0;
@@ -127,8 +133,8 @@ async function run(concurrency = 3) {
     if (photos.length === 0) resolve();
     else next();
   }).then(async () => {
-    console.log("Image Processing completed", results);
-    if(results.length>0){
+    if (results.length > 0) {
+      console.log("Image Processing completed", results);
       await clusterFaces(FACE_API_BASE_URL);
       console.log("Face Cluster Created!");
     }
