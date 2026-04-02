@@ -2,6 +2,7 @@ import axios from "axios";
 import { useState } from "react";
 import { FiMenu } from "react-icons/fi";
 import { IoCloudUploadOutline } from "react-icons/io5";
+import { BaseIP } from "../../data/BaseIP";
 type Props = {
   toggleSidebar: () => void;
 };
@@ -12,7 +13,7 @@ export default function Navbar({ toggleSidebar }: Props) {
     formData.append("photo", file);
 
     const res = await axios.post(
-      "http://localhost:5001/api/photos/upload",
+      `${BaseIP}/photos/upload`,
       formData,
       {
         headers: {

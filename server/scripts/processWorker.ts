@@ -7,8 +7,11 @@ import { execFile } from "child_process";
 import { promisify } from "util";
 import fetch, { FormData, Blob } from "node-fetch";
 import { clusterFaces } from "../src/services/faceClusterService";
-
-connectDB();
+import dotenv from 'dotenv';
+dotenv.config({path:'../config/.env'});
+const FACE_API_BASE_URL = process.env.FACE_API_URL;
+const MONGODB_URL = process.env.MONGODB_URL;
+connectDB(MONGODB_URL);
 
 let isImageProccessing = false;
 
@@ -37,7 +40,7 @@ async function processPhoto(p: any) {
     let form = new FormData();
     form.append("photo", new Blob([buffer]), filename);
 
-    let aiRes = await fetch("http://localhost:4001/detect-faces", {
+    let aiRes = await fetch(`${FACE_API_BASE_URL}/detect-faces`, {
       method: "POST",
       body: form,
     });
@@ -50,7 +53,7 @@ async function processPhoto(p: any) {
         filename = path.basename(converted);
         form = new FormData();
         form.append("photo", new Blob([buffer]), filename);
-        aiRes = await fetch("http://localhost:4001/detect-faces", {
+        aiRes = await fetch(`${FACE_API_BASE_URL}/detect-faces`, {
           method: "POST",
           body: form,
         });
@@ -126,7 +129,7 @@ async function run(concurrency = 3) {
   }).then(async () => {
     console.log("Image Processing completed", results);
     if(results.length>0){
-      await clusterFaces();
+      await clusterFaces(FACE_API_BASE_URL);
       console.log("Face Cluster Created!");
     }
     isImageProccessing = false;

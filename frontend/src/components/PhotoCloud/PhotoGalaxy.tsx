@@ -8,6 +8,7 @@ import {
 } from "../../utils/generateClusters";
 import type { Photo } from "../../data/photos";
 import { BaseIPForThumbnails } from "../../data/BaseIP";
+import { addBaseUrlForOriginalImg } from "../../utils/fixHeicUrl";
 
 type Props = {
   mode: ClusterMode;
@@ -37,7 +38,7 @@ export default function PhotoGalaxy({ mode, photos, onSelect, search }: Props) {
       {filtered.map((photo) => (
         <PhotoNode
           key={photo.id}
-          imageUrl={BaseIPForThumbnails + photo.url+".jpg"}
+          imageUrl={addBaseUrlForOriginalImg(photo.url)}
           texture={BaseIPForThumbnails+photo.thumbnail}
           position={photo.position}
           onClick={onSelect}

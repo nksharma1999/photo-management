@@ -4,10 +4,10 @@ const path = require("path");
 const fs = require("fs");
 const canvas = require("canvas");
 const faceapi = require("face-api.js");
-
+require('dotenv').config({ path: '../config/.env' });
 const { Canvas, Image, ImageData } = canvas;
 faceapi.env.monkeyPatch({ Canvas, Image, ImageData });
-
+const PORT = process.env.FACE_API_SERVER_PORT || 4401;
 const app = express();
 app.use(express.json());
 
@@ -169,6 +169,10 @@ app.post("/match-faces", async (req, res) => {
   }
 });
 
-app.listen(4001, () => {
-  console.log("Face API server running on http://localhost:4001");
+app.get("/face-api-health",(req,res)=>{
+  res.status(200).json("Face API Running...");
+})
+
+app.listen(PORT, () => {
+  console.log(`Face API server running on http://localhost:${PORT}`);
 });

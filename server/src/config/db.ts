@@ -1,8 +1,11 @@
 import mongoose from "mongoose";
 
-const connectDB = async () => {
+const connectDB = async (url:string | undefined) => {
   try {
-    await mongoose.connect("mongodb+srv://nksharmassm1999:Nand%40%231234@expensecluster.abmqlet.mongodb.net/?appName=ExpenseCluster");
+    if (!url) {
+      throw new Error("MONGODB_URL environment variable is not defined");
+    }
+    await mongoose.connect(url);
 
     console.log("✅ MongoDB Connected");
   } catch (err) {

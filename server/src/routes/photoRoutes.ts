@@ -1,7 +1,6 @@
 import express from "express"
 import multer from "multer"
 import { deletePhoto, getPhotos, getRecentPhotos, getPhotosByDate, getUnprocessedPhotos, processAllUnprocessed, toggleFavorite, uploadPhoto } from "../controllers/photoController"
-import db from "../config/db"
 
 const router = express.Router()
 

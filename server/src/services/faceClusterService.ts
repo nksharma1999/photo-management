@@ -3,16 +3,16 @@ import Person from "../model/Person";
 import Photo from "../model/Photo";
 import fetch from "node-fetch";
 
+
 async function findBestMatch(
   queryDescriptor: any,
   knownFaces: any[],
   threshold = 0.6,
+  FACE_API_BASE_URL : string| undefined
 ) {
-  const faceApiUrl =
-    process.env.FACEAPI_URL || "http://localhost:4001/match-faces";
 
   try {
-    const res = await fetch(faceApiUrl, {
+    const res = await fetch(`${FACE_API_BASE_URL}/match-faces`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ query: queryDescriptor, knownFaces, threshold }),
@@ -32,7 +32,7 @@ async function findBestMatch(
   return null;
 }
 
-export const clusterFaces = async () => {
+export const clusterFaces = async (FACE_API_BASE_URL:string|undefined) => {
   const embeddings = await FaceEmbedding.find({ processed: false });
   const persons = await Person.find();
 
@@ -48,7 +48,7 @@ export const clusterFaces = async () => {
   for (const embDoc of embeddings) {
     if (!embDoc.photoId) continue;
 
-    const match = await findBestMatch(embDoc.embedding, knownFaces, 0.5);
+    const match = await findBestMatch(embDoc.embedding, knownFaces, 0.5, FACE_API_BASE_URL);
     // console.log(match);
     if (match == null) {
       // no match found
