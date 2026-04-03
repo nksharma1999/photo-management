@@ -1,13 +1,13 @@
 import "./Album.css";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { BaseIP, BaseIPForThumbnails } from "../../data/BaseIP";
-import { useNavigate } from "react-router-dom";
+import { BaseIP } from "../../data/BaseIP";
 import AlbumCard from "./AlbumCard";
 
 type Album = {
   _id: string;
   name: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   photos: any[];
 };
 
@@ -27,9 +27,13 @@ export default function AlbumsPage() {
   };
 
   useEffect(() => {
-    fetchAlbums();
+    const callmehtod = () =>{
+      fetchAlbums();
+    }
+    callmehtod();
   }, []);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const createAlbum = async (e?: any) => {
     if (e) e.preventDefault();
     if (!newName.trim()) return;

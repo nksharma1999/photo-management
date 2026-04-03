@@ -103,7 +103,7 @@ async function run(concurrency = 3) {
   isImageProccessing = true;
   const photos = await Photo.find({ processed: false })
     .select("_id url filename")
-    .limit(100)
+    .limit(3)
     .lean();
   // console.log(`Found ${photos.length} unprocessed photos`);
 

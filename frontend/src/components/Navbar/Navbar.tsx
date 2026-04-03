@@ -7,24 +7,30 @@ type Props = {
   toggleSidebar: () => void;
 };
 export default function Navbar({ toggleSidebar }: Props) {
-  const [file, setFile] = useState(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [file, setFile] = useState<any | null>(null);
   const handleUpload = async () => {
     const formData = new FormData();
     formData.append("photo", file);
 
-    const res = await axios.post(
-      `${BaseIP}/photos/upload`,
-      formData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+    await axios.post(`${BaseIP}/photos/upload`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
       },
-    );
+    });
 
     // console.log(res.data);
     alert("Photo uploaded successfully");
   };
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = e.target.files;
+    if (!files || files.length === 0) {
+      return; // nothing selected
+    }
+    const file = files[0];
+    setFile(file);
+  }
   return (
     <div className="navbar">
       <FiMenu className="menu-icon" onClick={toggleSidebar} />
@@ -34,7 +40,7 @@ export default function Navbar({ toggleSidebar }: Props) {
       />
 
       <div className="nav-actions">
-        <input type="file" onChange={(e) => setFile(e.target.files[0])} />
+        <input type="file" onChange={handleFileChange} />
         <button className="upload" onClick={handleUpload}>
           {" "}
           <IoCloudUploadOutline /> Upload

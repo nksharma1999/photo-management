@@ -1,4 +1,6 @@
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import type { LatLngTuple } from 'leaflet'
+import "leaflet/dist/leaflet.css";
 import "./MapSection.css";
 import type { Location } from "../../pages/Dashboard";
 
@@ -8,18 +10,19 @@ type props ={
 }
 
 export default function MapSection({locations}:props) {
+  const center:LatLngTuple  = [22.9734, 78.6569];
   return (
     <div className="map-section">
       <h3>Photo Locations</h3>
 
       <MapContainer
-        center={[22.9734, 78.6569]}
-        zoom={5}
+        center={center}
+        zoom={3}
         scrollWheelZoom={false}
         className="map-container"
       >
         <TileLayer
-          attribution="&copy; OpenStreetMap contributors"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
