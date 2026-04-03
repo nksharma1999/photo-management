@@ -17,7 +17,7 @@ const AlbumsPage = lazy(() => import("../pages/Album/AlbumPage"));
 export default function AppRouter() {
   return (
     <BrowserRouter>
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<div className="loader"></div>}>
       <Routes>
         <Route element={<MainLayout />}>
           <Route path="/" element={<Dashboard />} />
