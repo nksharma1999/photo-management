@@ -1,6 +1,5 @@
 import { Canvas, useThree } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
-import "./PhotoCloud.css";
 import PhotoGalaxy from "./PhotoGalaxy";
 import { Suspense, useEffect, useState } from "react";
 import PreviewModal from "./PreviewModal";

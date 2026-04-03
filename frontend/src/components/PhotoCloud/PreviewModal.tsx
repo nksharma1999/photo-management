@@ -1,4 +1,3 @@
-import "./PreviewModal.css";
 
 type Props = {
   image: string;

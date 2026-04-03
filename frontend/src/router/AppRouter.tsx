@@ -1,18 +1,23 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import MainLayout from "../layout/MainLayout";
-import Dashboard from "../pages/Dashboard";
-import GalleryPage from "../pages/Gallery/GalleryPage";
-import PeoplePage from "../pages/People/PeoplePage";
-import PeopleDetails from "../pages/People/PeopleDetails";
-import AlbumDetails from "../pages/Album/AlbumDetails";
-import AlbumsPage from "../pages/Album/AlbumPage";
-// import People from "../pages/People";
-// import Locations from "../pages/Locations";
-// import Timeline from "../pages/Timeline";
+import { lazy, Suspense } from "react";
+
+
+// Lazy imports
+const Dashboard = lazy(() => import("../pages/Dashboard"));
+const GalleryPage = lazy(() => import("../pages/Gallery/GalleryPage"));
+const PeoplePage = lazy(() => import("../pages/People/PeoplePage"));
+const PeopleDetails = lazy(() => import("../pages/People/PeopleDetails"));
+const AlbumDetails = lazy(() => import("../pages/Album/AlbumDetails"));
+const AlbumsPage = lazy(() => import("../pages/Album/AlbumPage"));
+// const People = lazy(() => import("../pages/People"));
+// const Locations = lazy(() => import("../pages/Locations"));
+// const Timeline = lazy(() => import("../pages/Timeline"));
 
 export default function AppRouter() {
   return (
     <BrowserRouter>
+    <Suspense fallback={<div>Loading...</div>}>
       <Routes>
         <Route element={<MainLayout />}>
           <Route path="/" element={<Dashboard />} />
@@ -28,6 +33,7 @@ export default function AppRouter() {
           <Route path="/timeline" element={<Timeline />} /> */}
         </Route>
       </Routes>
+      </Suspense>
     </BrowserRouter>
   );
 }

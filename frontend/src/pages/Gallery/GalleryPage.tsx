@@ -1,4 +1,3 @@
-import "./GalleryPage.css";
 import PhotoCard from "./PhotoCard";
 import axios from "axios";
 import { useEffect, useState } from "react";

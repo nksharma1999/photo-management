@@ -2,16 +2,18 @@
   "name": "photo-dashboard",
   "version": "1.0.0",
   "scripts": {
+    "start:frontend": "serve -s ./frontend/dist -l 5000",
     "start:main": "ts-node server/src/server.ts",
     "start:face-api": "node face-api/index.js",
     "start:pworker": "ts-node server/scripts/processworker.ts",
     "start:convert-folderinto-project": "ts-node server/scripts/convertFolderIntoProject.ts",
     "start:resetdb": "ts-node server/scripts/resetDB.ts",
-    "start:all": "concurrently -n \"MAIN,FACE,PWORKER\" -c \"blue,green,yellow,red\" \"npm run start:main\" \"npm run start:face-api\" \"npm run start:pworker\""
+    "start:all": "concurrently -n \"CLIENT,MAIN,FACE,PWORKER\" -c \"teal,blue,green,yellow,red\" \"npm run start:frontend\" \"npm run start:main\" \"npm run start:face-api\" \"npm run start:pworker\""
   },
   "devDependencies": {
-    "typescript": "^5.0.0",
+    "concurrently": "^8.0.0",
+    "serve": "^14.2.6",
     "ts-node": "^10.9.2",
-    "concurrently": "^8.0.0"
+    "typescript": "^5.0.0"
   }
 }

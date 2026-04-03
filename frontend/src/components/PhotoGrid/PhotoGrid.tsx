@@ -1,5 +1,4 @@
 import Masonry from "react-masonry-css";
-import "./PhotoGrid.css";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { BaseIP, BaseIPForThumbnails } from "../../data/BaseIP";

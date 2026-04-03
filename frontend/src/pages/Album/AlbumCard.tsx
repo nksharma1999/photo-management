@@ -1,5 +1,4 @@
 import { useNavigate } from "react-router-dom";
-import "./AlbumCard.css";
 
 type Album = {
   _id: string;

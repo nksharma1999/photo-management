@@ -1,4 +1,3 @@
-import "./Album.css";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { BaseIP } from "../../data/BaseIP";
@@ -12,6 +11,7 @@ type Album = {
 };
 
 export default function AlbumsPage() {
+  
   const [albums, setAlbums] = useState<Album[]>([]);
   const [showCreate, setShowCreate] = useState(false);
   const [newName, setNewName] = useState("");

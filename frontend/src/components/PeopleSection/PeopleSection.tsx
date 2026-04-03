@@ -1,5 +1,4 @@
 import { useNavigate } from "react-router-dom";
-import "./PeopleSection.css";
 import {BaseIPForThumbnails } from "../../data/BaseIP";
 import type { Person } from "../../pages/Dashboard";
 
