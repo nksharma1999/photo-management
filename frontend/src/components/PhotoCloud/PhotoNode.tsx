@@ -11,8 +11,26 @@ type Props = {
   highlight: boolean;
 };
 
-export const PhotoNode = ({ texture,imageUrl, position, onClick, highlight }: Props) => {
-  const tex = useLoader(TextureLoader, texture);
+export const PhotoNode = ({
+  texture,
+  imageUrl,
+  position,
+  onClick,
+  highlight,
+}: Props) => {
+  const SafeImageTexture = (url: string) => {
+    let texture;
+    try {
+      // eslint-disable-next-line react-hooks/rules-of-hooks
+      texture = useLoader(TextureLoader, url);
+    } catch (error) {
+      console.error("Image failed to load:", error);
+      // fallback: use a placeholder texture or color
+      texture = null;
+    }
+    return texture;
+  };
+  const tex = SafeImageTexture(texture);
   //   tex.colorSpace = THREE.SRGBColorSpace;
 
   const [hovered, setHovered] = useState(false);
