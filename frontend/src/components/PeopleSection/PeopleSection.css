@@ -92,3 +92,11 @@
   padding: 4px;
   border-radius: 6px;
 }
+
+.loadImage{
+  text-align: center;
+  color: teal;
+}
+.loadImage:hover{
+  cursor: pointer;
+}

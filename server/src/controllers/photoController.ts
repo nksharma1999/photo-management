@@ -203,6 +203,9 @@ export const getRecentPhotos = async (req: any, res: any) => {
 
 export const getPhotosByDate = async (req: any, res: any) => {
   try {
+    const { page = 1, limit = 5 } = req.query;
+    const skip = (page - 1) * limit;
+
     const rows: any = await Photo.aggregate([
       {
         $addFields: {
@@ -236,6 +239,8 @@ export const getPhotosByDate = async (req: any, res: any) => {
         },
       },
       { $sort: { _id: -1 } },
+      { $skip: skip },
+      { $limit: parseInt(limit) },
     ]);
 
     const result = rows.map((r: any) => ({ date: r._id, photos: r.photos }));

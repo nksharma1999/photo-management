@@ -7,7 +7,7 @@ import { addBaseUrlForOriginalImg } from "../../utils/fixHeicUrl";
 
 type Photo = { _id: string; url: string; thumbnail?: string; isFav?: boolean };
 type Group = { date: string; photos: Photo[] };
-type Album = {_id: string, name: string };
+type Album = { _id: string; name: string };
 
 export default function GalleryPage() {
   const location = useLocation();
@@ -16,18 +16,48 @@ export default function GalleryPage() {
   const isFavorites = location.pathname.includes("favorites");
   const isAlbums = location.pathname.includes("albums");
   const [groups, setGroups] = useState<Group[]>([]);
-  const [albumList,setAlbumList] = useState<Album[]>([]);
+  const [albumList, setAlbumList] = useState<Album[]>([]);
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
 
-  const getAlbumList = async () =>{
+  const getAlbumList = async () => {
     const res = await axios.get(`${BaseIP}/albums/idname`);
     setAlbumList(res.data || []);
-  }
+  };
+  const fetchPhotos = async (pageNum: number) => {
+    try {
+      const res = await axios.get(
+        `${BaseIP}/photos/by-date?page=${pageNum}&limit=5`,
+      );
+      const newData = res.data || [];
+      if (newData.length === 0) {
+        setHasMore(false);
+      } else {
+        setGroups((prev) => [...prev, ...newData]);
+      }
+    } catch (err) {
+      console.error("Failed to load gallery groups", err);
+    }
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if(page<=0){
+        setPage(1);
+        return;
+      }
+      await fetchPhotos(page);
+    };
+    fetchData();
+  }, [page]);
+
+
   useEffect(() => {
     const fetch = async () => {
       try {
         getAlbumList();
-        const res = await axios.get(`${BaseIP}/photos/by-date`);
-        setGroups(res.data || []);
+        // const res = await axios.get(`${BaseIP}/photos/by-date`);
+        // setGroups(res.data || []);
       } catch (err) {
         console.error("Failed to load gallery groups", err);
       }
@@ -53,7 +83,7 @@ export default function GalleryPage() {
     <div className="gallery-page">
       <div className="gallery-tabs">
         <button
-          className={!isFavorites  && !isAlbums ? "active" : ""}
+          className={!isFavorites && !isAlbums ? "active" : ""}
           onClick={() => navigate("/gallery")}
         >
           All Photos
@@ -92,7 +122,7 @@ export default function GalleryPage() {
                   ? p.thumbnail.startsWith("/")
                     ? `${BaseIPForThumbnails}${p.thumbnail}`
                     : p.thumbnail
-                  : p.url+".jpg" || "";
+                  : p.url + ".jpg" || "";
 
                 return (
                   <PhotoCard
@@ -103,7 +133,7 @@ export default function GalleryPage() {
                     isFavorite={p.isFav}
                     type="photo"
                     _id={p._id}
-                    albumList = {albumList}
+                    albumList={albumList}
                   />
                 );
               })}
@@ -111,6 +141,9 @@ export default function GalleryPage() {
           </div>
         );
       })}
+      {hasMore && (
+        <div className="loadImage" onClick={() => setPage((prev) => prev + 1)}>Load Image</div>
+      )}
     </div>
   );
 }
