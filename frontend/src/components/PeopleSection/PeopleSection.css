@@ -10,7 +10,7 @@
 
 .people-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 20px;
 }
 
@@ -22,6 +22,7 @@
   align-items: center;
   gap: 12px;
   transition: 0.2s;
+  /* min-width: 180px; */
 }
 
 .person-card:hover {
@@ -64,9 +65,21 @@
   transition: 0.2s;
   cursor: pointer;
 }
+.delete-icon{
+  position: absolute;
+  right: 40px;
+  top: 10px;
+  opacity: 0;
+  transition: 0.2s;
+  cursor: pointer;
+}
 
 /* show on hover */
 .person-card:hover .edit-icon {
+  opacity: 1;
+}
+
+.person-card:hover .delete-icon{
   opacity: 1;
 }
 

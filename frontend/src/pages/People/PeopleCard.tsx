@@ -3,6 +3,7 @@ import { FaEdit } from "react-icons/fa";
 import { BaseIP } from "../../data/BaseIP";
 import axios from "axios";
 import type { Person } from "../Dashboard";
+import { MdDelete } from "react-icons/md";
 
 type Props = {
   person: Person;
@@ -32,6 +33,22 @@ export default function PeopleCard({
     refreshPeople();
   };
 
+  const handleDelete = async () => {
+    if (
+      window.confirm("Are you sure you want to permanently delete this People?")
+    ) {
+      await axios
+        .delete(`${BaseIP}/people/${person._id}`)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .then((data: any) => {
+          console.log(data.message);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    }
+  };
+
   return (
     <div
       className="person-card"
@@ -45,7 +62,6 @@ export default function PeopleCard({
       />
 
       <div className="person-info">
-
         {/* NAME / INPUT */}
         {isEditing ? (
           <input
@@ -70,6 +86,15 @@ export default function PeopleCard({
             onClick={(e) => {
               e.stopPropagation(); // 🔥 prevent navigation
               setIsEditing(true);
+            }}
+          />
+        )}
+        {!isEditing && (
+          <MdDelete
+            className="delete-icon"
+            onClick={(e) => {
+              e.stopPropagation(); // 🔥 prevent navigation
+              handleDelete();
             }}
           />
         )}
