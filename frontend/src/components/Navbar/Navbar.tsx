@@ -33,11 +33,11 @@ export default function Navbar({ toggleSidebar }: Props) {
   }
   return (
     <div className="navbar">
-      <FiMenu className="menu-icon" onClick={toggleSidebar} />
-      <input
+      
+      {/* <input
         className="search"
         placeholder="Search photos, people, locations..."
-      />
+      /> */}
 
       <div className="nav-actions">
         <input type="file" onChange={handleFileChange} />
@@ -45,8 +45,9 @@ export default function Navbar({ toggleSidebar }: Props) {
           {" "}
           <IoCloudUploadOutline /> Upload
         </button>
-        <img className="avatar" src="https://i.pravatar.cc/40" />
+        {/* <img className="avatar" src="https://i.pravatar.cc/40" /> */}
       </div>
+      <FiMenu className="menu-icon" onClick={toggleSidebar} size={35}/>
     </div>
   );
 }
