@@ -3,7 +3,7 @@ import { BaseIPForThumbnails } from "../data/BaseIP";
 export const fixHeicUrl = (url: string) => {
   if (typeof url !== "string") return url;
 
-  return url.toLowerCase().endsWith(".heic")
+  return url.toLowerCase().endsWith(".heic") || url.toLowerCase().endsWith(".heif")
     ? url + ".jpg"
     : url;
 }
@@ -11,7 +11,7 @@ export const fixHeicUrl = (url: string) => {
 export const fixHeicThumbnailUrl = (url: string) => {
   if (typeof url !== "string") return url;
 
-  return url.toLowerCase().endsWith(".heic")
+  return url.toLowerCase().endsWith(".heic") || url.toLowerCase().endsWith(".heif")
     ? url + ".jpg"
     : url;
 }

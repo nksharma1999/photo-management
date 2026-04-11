@@ -119,31 +119,49 @@ async function processSinglePhoto(filepath: string) {
   }
 }
 
-export async function processFolder(folderPath: string | undefined) {
-  if (!folderPath) {
+export async function processFolder(folderPaths: string | undefined) {
+  if (!folderPaths) {
     console.error("Folder path is not defined");
     process.exit(1);
   }
 
   try {
-    const files = await fs.promises.readdir(folderPath);
+    // 👉 Split multiple folders by comma
+    const folderPathsArray = folderPaths
+      .split(",")
+      .map(p => p.trim())
+      .filter(Boolean);
 
-    // Filter only images
-    const imageFiles = files.filter((file) => {
-      const ext = path.extname(file).toLowerCase();
-      return [".jpg", ".jpeg", ".png", ".heic", ".heif"].includes(ext);
-    });
+    console.log(`📂 Processing ${folderPathsArray.length} folders`);
 
-    console.log(`📁 Found ${imageFiles.length} images`);
 
-    // 👉 Process ONE BY ONE (important)
-    for (const file of imageFiles) {
-      const fullPath = path.join(folderPath, file);
+    // 👉 Loop each folder
+    for (const folderPath of folderPathsArray) {
+      console.log(`\n📁 Reading folder: ${folderPath}`);
 
-      await processSinglePhoto(fullPath); // sequential
+      try {
+        const files = await fs.promises.readdir(folderPath);
+
+        // Filter only images
+        const imageFiles = files.filter((file) => {
+          const ext = path.extname(file).toLowerCase();
+          return [".jpg", ".jpeg", ".png", ".heic", ".heif"].includes(ext);
+        });
+
+        console.log(`📸 Found ${imageFiles.length} images in ${folderPath}`);
+
+        // 👉 Process ONE BY ONE (safe for memory)
+        for (const file of imageFiles) {
+          const fullPath = path.join(folderPath, file);
+          await processSinglePhoto(fullPath);
+        }
+
+      } catch (folderErr) {
+        console.error(`❌ Error processing folder ${folderPath}:`, folderErr);
+      }
     }
 
-    console.log("🎉 Folder processing completed");
+    console.log("\n🎉 All folders processed successfully");
   } catch (err) {
     console.error("Folder processing error:", err);
   }
